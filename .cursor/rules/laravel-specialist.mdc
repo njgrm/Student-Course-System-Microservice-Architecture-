@@ -1,0 +1,312 @@
+---
+alwaysApply: true
+---
+<laravel-specialist>
+
+# Laravel Microservices Specialist Rules
+
+Curated patterns for the SAR2 Laravel microservices project (Student / Course / Enrollment services).
+These rules complement `laravel-boost.mdc` with domain-specific patterns.
+
+---
+
+## 1. Inter-Service Testing with Http::fake() ⭐ MOST IMPACTFUL
+
+**Always** use `Http::fake()` in enrollment-service tests to isolate from live student/course services.
+Never let tests make real HTTP calls to other services — tests must pass without other services running.
+
+```php
+use Illuminate\Support\Facades\Http;
+
+public function test_can_create_enrollment(): void
+{
+    Http::fake([
+        'localhost:8001/api/students/*' => Http::response([
+            'id' => 1, 'full_name' => 'Alice Smith', 'email' => 'alice@example.com',
+        ], 200),
+        'localhost:8002/api/courses/*' => Http::response([
+            'id' => 1, 'name' => 'Math 101', 'credits' => 3,
+        ], 200),
+    ]);
+
+    $response = $this->postJson('/api/enrollments', [
+        'student_id' => 1,
+        'course_id'  => 1,
+    ]);
+
+    $response->assertStatus(201)
+        ->assertJsonStructure(['id', 'student_id', 'course_id', 'enrolled_at']);
+}
+
+public function test_returns_422_when_student_service_down(): void
+{
+    Http::fake([
+        'localhost:8001/api/students/*' => Http::response([], 404),
+        'localhost:8002/api/courses/*'  => Http::response(['id' => 1, 'name' => 'Math 101'], 200),
+    ]);
+
+    $this->postJson('/api/enrollments', ['student_id' => 99, 'course_id' => 1])
+        ->assertStatus(422);
+}
+```
+
+Assert that the enrollment service actually called the other services:
+```php
+Http::assertSent(fn ($request) =>
+    str_contains($request->url(), 'localhost:8001/api/students/1')
+);
+```
+
+---
+
+## 2. Feature Test Structure (use for ALL services)
+
+Every feature test MUST follow this structure:
+
+```php
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class StudentApiTest extends TestCase
+{
+    use RefreshDatabase; // Always — never leave dirty state between tests
+
+    public function test_can_list_students(): void
+    {
+        Student::factory()->count(3)->create();
+
+        $this->getJson('/api/students')
+            ->assertStatus(200)
+            ->assertJsonCount(3);
+    }
+
+    public function test_can_create_student(): void
+    {
+        $this->postJson('/api/students', [
+            'full_name' => 'Alice Smith',
+            'email'     => 'alice@example.com',
+            'age'       => 22,
+        ])
+        ->assertStatus(201)
+        ->assertJsonStructure(['id', 'full_name', 'email', 'age']);
+
+        $this->assertDatabaseHas('students', ['email' => 'alice@example.com']);
+    }
+
+    public function test_validation_requires_unique_email(): void
+    {
+        Student::factory()->create(['email' => 'alice@example.com']);
+
+        $this->postJson('/api/students', [
+            'full_name' => 'Alice Again',
+            'email'     => 'alice@example.com',
+            'age'       => 25,
+        ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
+    }
+
+    public function test_can_delete_student(): void
+    {
+        $student = Student::factory()->create();
+
+        $this->deleteJson("/api/students/{$student->id}")
+            ->assertStatus(200);
+
+        $this->assertDatabaseMissing('students', ['id' => $student->id]);
+    }
+}
+```
+
+---
+
+## 3. API Resources for Enriched Responses
+
+Use `JsonResource` when the enrollment-service enriches responses with student/course names fetched from other services:
+
+```php
+// app/Http/Resources/EnrollmentResource.php
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class EnrollmentResource extends JsonResource
+{
+    // Pass enrichment data via constructor
+    public function __construct($resource, private array $enrichment = [])
+    {
+        parent::__construct($resource);
+    }
+
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'           => $this->id,
+            'student_id'   => $this->student_id,
+            'course_id'    => $this->course_id,
+            'enrolled_at'  => $this->enrolled_at,
+            'student_name' => $this->enrichment['student_name'] ?? null,
+            'course_name'  => $this->enrichment['course_name'] ?? null,
+            'created_at'   => $this->created_at->toISOString(),
+        ];
+    }
+}
+
+// In EnrollmentController::index()
+public function index(): AnonymousResourceCollection
+{
+    $enrollments = Enrollment::all();
+
+    return EnrollmentResource::collection(
+        $enrollments->map(function ($enrollment) {
+            $student = Http::get("http://localhost:8001/api/students/{$enrollment->student_id}");
+            $course  = Http::get("http://localhost:8002/api/courses/{$enrollment->course_id}");
+
+            return new EnrollmentResource($enrollment, [
+                'student_name' => $student->ok() ? $student->json('full_name') : 'Unknown',
+                'course_name'  => $course->ok()  ? $course->json('name')       : 'Unknown',
+            ]);
+        })
+    );
+}
+```
+
+---
+
+## 4. Eloquent Query Scopes
+
+Add named scopes to Eloquent models for reusable query constraints. Never inline complex queries in controllers.
+
+```php
+// In Enrollment model
+public function scopeForStudent(Builder $query, int $studentId): void
+{
+    $query->where('student_id', $studentId);
+}
+
+public function scopeForCourse(Builder $query, int $courseId): void
+{
+    $query->where('course_id', $courseId);
+}
+
+public function scopeEnrolledAfter(Builder $query, string $date): void
+{
+    $query->where('enrolled_at', '>=', $date);
+}
+
+// Usage in controller
+$enrollments = Enrollment::forStudent($studentId)->get();
+```
+
+---
+
+## 5. Model Observers for Cascade Cleanup
+
+Use Observers to handle side effects (e.g., notifying enrollment-service when a student is deleted)
+rather than putting logic in controllers.
+
+```php
+// app/Observers/StudentObserver.php
+namespace App\Observers;
+
+use App\Models\Student;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+class StudentObserver
+{
+    public function deleted(Student $student): void
+    {
+        try {
+            Http::delete("http://localhost:8003/api/enrollments/student/{$student->id}");
+        } catch (\Exception $e) {
+            // Enrollment service down — log but do not block the delete
+            Log::warning("Could not cascade-delete enrollments for student {$student->id}: {$e->getMessage()}");
+        }
+    }
+}
+
+// Register in AppServiceProvider::boot()
+Student::observe(StudentObserver::class);
+```
+
+---
+
+## 6. Eager Loading & N+1 Prevention
+
+Never access relationships without eager loading. Always use `with()`.
+
+```php
+// ❌ Bad — N+1 in enrollment listing
+$enrollments = Enrollment::all();
+foreach ($enrollments as $e) {
+    echo $e->student->full_name; // Each triggers a new query
+}
+
+// ✅ Good — eager load
+$enrollments = Enrollment::with(['student', 'course'])->get();
+
+// ✅ Good — withCount for aggregates
+$courses = Course::withCount('enrollments')->get();
+echo $course->enrollments_count;
+
+// ✅ Good — chunking for large datasets (avoid memory exhaustion)
+Enrollment::chunk(100, function ($chunk) {
+    foreach ($chunk as $enrollment) {
+        // process...
+    }
+});
+```
+
+---
+
+## 7. JSON Response Standards
+
+Consistent response shapes across all three services:
+
+```php
+// Success list — 200
+return response()->json($students, 200);
+
+// Success single — 200
+return response()->json($student, 200);
+
+// Created — 201
+return response()->json($student, 201);
+
+// No content (delete) — 200 with message OR 204
+return response()->json(['message' => 'Deleted successfully.'], 200);
+
+// Validation error — handled automatically by Form Request (422)
+
+// Not found — 404
+return response()->json(['message' => 'Student not found.'], 404);
+
+// Inter-service failure — 422
+return response()->json(['message' => 'Student not found in Student Service.'], 422);
+```
+
+---
+
+## 8. Artisan Test Commands Reference
+
+```bash
+# Run a single service's tests
+cd services/student-service && php artisan test
+
+# Run a specific test method
+php artisan test --filter=test_can_create_student
+
+# Run with coverage
+php artisan test --coverage
+
+# Run all services (from root)
+cd services/student-service && php artisan test
+cd ../course-service && php artisan test
+cd ../enrollment-service && php artisan test
+```
+
+</laravel-specialist>

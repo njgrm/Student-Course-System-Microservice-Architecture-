@@ -4,7 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "serve:all": "concurrently -c \"#818cf8,#34d399,#fbbf24\" -n \"student,course,enrollment\" \"cd services/student-service && php artisan serve --port=8001\" \"cd services/course-service && php artisan serve --port=8002\" \"cd services/enrollment-service && php artisan serve --port=8003\"",
+        "build:services": "concurrently \"cd services/student-service && npm run build\" \"cd services/course-service && npm run build\" \"cd services/enrollment-service && npm run build\"",
+        "install:services": "cd services/student-service && npm install && cd ../course-service && npm install && cd ../enrollment-service && npm install",
+        "fresh:services": "concurrently \"cd services/student-service && php artisan migrate:fresh --seed\" \"cd services/course-service && php artisan migrate:fresh --seed\" \"cd services/enrollment-service && php artisan migrate:fresh --seed\""
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

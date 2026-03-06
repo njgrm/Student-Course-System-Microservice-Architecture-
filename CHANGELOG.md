@@ -1,5 +1,59 @@
 # Changelog
 
+## [2026-03-06] — Add Laravel Specialist Cursor Rule (Skills Research)
+
+### Added
+- `.cursor/rules/laravel-specialist.mdc` — Curated Cursor rule file with 8 project-specific patterns:
+  1. `Http::fake()` for inter-service testing (enrollment-service isolation)
+  2. Feature test structure (RefreshDatabase, assertDatabaseHas, assertJsonValidationErrors)
+  3. API Resources (JsonResource with enrichment data from other services)
+  4. Eloquent Query Scopes (scopeForStudent, scopeForCourse, scopeEnrolledAfter)
+  5. Model Observers for cascade cleanup (student/course delete → notify enrollment-service)
+  6. Eager loading & N+1 prevention (with(), withCount(), chunk())
+  7. JSON response standards (201 created, 422 validation, 404 not found)
+  8. Artisan test command reference
+
+### Changed
+- Nothing modified — new file only
+
+### Fixed
+- Nothing
+
+### Learnings & Mistakes
+- **Skills are NOT installed as npm packages in a Laravel project** — community skills (jeffallan/claude-skills, jezweb/claude-skills) are designed for Claude Code CLI (`npx skills add`), which installs SKILL.md files to `~/.claude/skills/`
+- **For Cursor IDE**: skills translate to `.cursor/rules/*.mdc` files (identical pattern to the existing `laravel-boost.mdc` — `alwaysApply: true` frontmatter)
+- **For GitHub Copilot in VS Code**: skills go in `AGENTS.md` or `.github/copilot-instructions.md`
+- **Don't install the full skill**: The `/jeffallan/claude-skills` laravel-specialist skill is too generic — it covers queues/Horizon/JWT/auth irrelevant to this project. Curate only relevant patterns
+- **Most impactful pattern**: `Http::fake()` for enrollment-service tests — without it, tests fail whenever student/course services aren't running
+- Validated: `.cursor/rules/` already existed with `laravel-boost.mdc` — adding `laravel-specialist.mdc` follows the same convention
+
+## [2026-03-06] — Fix Vite Manifest Error & Add Serve-All Dev Tooling
+
+### Added
+- `npm run serve:all` — Single command to start all 3 services (ports 8001/8002/8003) using `concurrently` with color-coded, labeled output
+- `npm run build:services` — Build Vite assets for all 3 services in parallel
+- `npm run install:services` — Install npm dependencies across all 3 services
+- `npm run fresh:services` — Reset and re-seed all 3 SQLite databases in parallel
+- `serve-all.ps1` — PowerShell script that launches each service in its own terminal window
+- `.vscode/tasks.json` — VS Code task definitions:
+  - **Serve All Services** (compound task, Ctrl+Shift+B) — launches 3 dedicated terminals grouped together
+  - **Build All Vite Assets** — runs `npm run build:services`
+  - **Fresh Seed All Services** — runs `npm run fresh:services`
+  - **Test All Services** — runs `php artisan test` sequentially across all 3 services
+- `public/build/manifest.json` in all 3 services — generated via `npm run build` (Vite production build)
+
+### Changed
+- `package.json` (root) — Added `serve:all`, `build:services`, `install:services`, `fresh:services` scripts
+
+### Fixed
+- **Vite manifest not found** (`ViteManifestNotFoundException`) — All 3 services had `@vite()` in Blade layouts but no built assets. Fixed by running `npm install && npm run build` in each service to generate `public/build/manifest.json`
+
+### Learnings & Mistakes
+- **Vite assets must be built before serving** — Laravel's `@vite()` directive requires `public/build/manifest.json` which is only created by `npm run build` (production) or served by `npm run dev` (dev server). Without either, every Blade page throws `ViteManifestNotFoundException`.
+- **`concurrently` is already a root dependency** — No new installs needed; the root `package.json` had it at `^9.0.1` from the Laravel Boost scaffold.
+- **VS Code compound tasks** are the best DX — `dependsOn` with `dependsOrder: parallel` + `presentation.group: "services"` groups all 3 terminals together with dedicated panels. Run via `Ctrl+Shift+B` or `Tasks: Run Build Task`.
+- **Node version warning** — Vite 7.3.1 requires Node `^20.19.0 || >=22.12.0` but builds fine on `v20.18.0`. Not blocking.
+
 ## [2026-03-06] — Scaffold Three Laravel Microservices with SQLite + Livewire
 
 ### Added
