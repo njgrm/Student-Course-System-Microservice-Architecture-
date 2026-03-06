@@ -93,6 +93,18 @@ You are an expert full-stack Laravel developer and systems architect for this pr
 - **Monolith reference (SAR2/):**
   - `cd SAR2 && npm start` (runs monolith on port 3000)
   - `cd SAR2 && node seed.js` (seeds monolith with sample data)
+- **Laravel Boost guidelines (`.cursor/rules/laravel-boost.mdc`):**
+  - Always-applied rules file — referenced automatically by Cursor on every prompt
+  - Key rules to follow:
+    - Use PHP 8.2+ features: constructor promotion, typed properties, explicit return types
+    - Use TitleCase for enums, PHPDoc blocks for complex logic
+    - Laravel 12 structure: middleware registered in `bootstrap/app.php` (no `Kernel.php`)
+    - Eloquent: never use `DB::` facade, use eager loading (`with()`), scope queries in models
+    - Use Form Requests for validation (`StoreStudentRequest`, `UpdateCourseRequest`)
+    - Use `php artisan make:` commands for scaffolding — don't create files manually when artisan can
+    - Run `vendor/bin/pint --dirty` before finalizing code (PSR-12 auto-formatting)
+    - PHPUnit tests: use `$this->getJson()`, `$this->postJson()`, assert HTTP status codes
+    - Use Laravel Boost MCP tools: `search-docs`, `tinker`, `database-query`, `application-info`
 
 ## Standards
 

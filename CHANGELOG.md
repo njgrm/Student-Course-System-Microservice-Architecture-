@@ -29,3 +29,81 @@
 - **Embedded `.git` in SAR2** — The monolith reference had its own git history. Removing `SAR2/.git` before staging prevents submodule confusion and ensures all SAR2 files are tracked normally.
 - **Livewire v4.2.1** is the current latest compatible with Laravel 12 — confirmed via `composer show livewire/livewire`.
 - **Context7 confirmed** — Resolved Livewire 4 docs at `/websites/livewire_laravel_4_x` (1664 snippets, trust 9.9). This should be used before writing any Livewire component code.
+
+## [2026-03-06] — Full Implementation of All Three Microservices
+
+### Added
+
+**Student Service (port 8001):**
+- `app/Models/Student.php` — Eloquent model with `$fillable` (full_name, email, age) and `casts()` (age → integer)
+- `database/migrations/2026_03_06_034555_create_students_table.php` — Schema: full_name string, email string unique, age integer, timestamps
+- `database/factories/StudentFactory.php` — Fake name, email, age 18–30
+- `database/seeders/StudentSeeder.php` — 4 sample students (Alice Johnson, Bob Smith, Charlie Brown, Diana Prince)
+- `app/Http/Requests/StoreStudentRequest.php` — Validates full_name (required|string), email (required|email|unique), age (required|integer|min:1)
+- `app/Http/Requests/UpdateStudentRequest.php` — Same with `sometimes` + unique-ignore-current
+- `app/Http/Controllers/StudentController.php` — Full CRUD (index/store/show/update/destroy) + cascade delete notification to Enrollment Service
+- `routes/api.php` — `Route::apiResource('students', StudentController::class)`
+- `app/Livewire/StudentManager.php` — Full CRUD Livewire component with form state, validation, flash messages
+- `resources/views/livewire/student-manager.blade.php` — Tailwind-styled table + form with indigo theme
+- `resources/views/layouts/app.blade.php` — Base layout with nav bar (📚 Student Service)
+- `resources/views/students/index.blade.php` — Extends layout, renders `<livewire:student-manager />`
+- `tests/Feature/StudentApiTest.php` — 9 feature tests covering full CRUD, validation, duplicate email, 404s, homepage
+
+**Course Service (port 8002):**
+- `app/Models/Course.php` — Eloquent model with `$fillable` (name, description, credits) and `casts()` (credits → integer)
+- `database/migrations/2026_03_06_035209_create_courses_table.php` — Schema: name string, description text, credits integer, timestamps
+- `database/factories/CourseFactory.php` — Fake words, sentence, numberBetween 1–6
+- `database/seeders/CourseSeeder.php` — 4 sample courses (Intro to CS, Data Structures, Web Dev, Database Systems)
+- `app/Http/Requests/StoreCourseRequest.php` — Validates name, description, credits (all required)
+- `app/Http/Requests/UpdateCourseRequest.php` — Same with `sometimes`
+- `app/Http/Controllers/CourseController.php` — Full CRUD + cascade delete notification to Enrollment Service
+- `routes/api.php` — `Route::apiResource('courses', CourseController::class)`
+- `app/Livewire/CourseManager.php` — Full CRUD Livewire component with emerald theme
+- `resources/views/livewire/course-manager.blade.php` — Table + form with textarea for description
+- `resources/views/layouts/app.blade.php` — Base layout (📖 Course Service)
+- `resources/views/courses/index.blade.php` — Extends layout, renders `<livewire:course-manager />`
+- `tests/Feature/CourseApiTest.php` — 8 feature tests covering full CRUD, validation, 404s, homepage
+
+**Enrollment Service (port 8003):**
+- `app/Models/Enrollment.php` — Eloquent model with `$fillable` (student_id, course_id, enrolled_at) and casts (integers, datetime)
+- `database/migrations/2026_03_06_035750_create_enrollments_table.php` — Schema: student_id unsignedBigInteger, course_id unsignedBigInteger, enrolled_at timestamp, unique composite [student_id, course_id]
+- `database/factories/EnrollmentFactory.php` — Random student_id/course_id 1–4, enrolled_at now()
+- `database/seeders/EnrollmentSeeder.php` — 5 sample enrollments linking students to courses
+- `app/Http/Requests/StoreEnrollmentRequest.php` — Validates student_id and course_id (required|integer|min:1)
+- `app/Http/Controllers/EnrollmentController.php` — Full CRUD with:
+  - Inter-service HTTP calls to verify student/course existence before enrollment
+  - Duplicate enrollment check (returns 409)
+  - Response enrichment with student_name and course_name from other services
+  - `destroyByStudent()` and `destroyByCourse()` cascade endpoints
+  - Graceful error handling when services are unavailable (503)
+- `routes/api.php` — Custom routes (enrollments/student/{id}, enrollments/course/{id}) + CRUD routes
+- `app/Livewire/EnrollmentManager.php` — CRUD component that fetches students/courses from other services for dropdown selects, amber theme
+- `resources/views/livewire/enrollment-manager.blade.php` — Table + form with select dropdowns, shows enriched student/course names
+- `resources/views/layouts/app.blade.php` — Base layout (🎓 Enrollment Service)
+- `resources/views/enrollments/index.blade.php` — Extends layout
+- `tests/Feature/EnrollmentApiTest.php` — 11 feature tests covering CRUD, duplicate enrollment (409), nonexistent student/course (404), cascade delete by student/course, Http::fake for inter-service calls
+
+**Testing Infrastructure:**
+- `tests/TestCase.php` in all 3 services — Added `withoutVite()` in `setUp()` to prevent Vite manifest errors during testing
+- `tests/Feature/ExampleTest.php` in all 3 services — Enabled `RefreshDatabase` trait
+- All 3 services' `bootstrap/app.php` — Updated with `api: __DIR__.'/../routes/api.php'` for API route registration
+
+### Changed
+- `AGENTS.md` — Added Laravel Boost guidelines section under Tools referencing `.cursor/rules/laravel-boost.mdc`
+- `database/seeders/DatabaseSeeder.php` in each service — Updated to call respective entity seeders (StudentSeeder, CourseSeeder, EnrollmentSeeder)
+
+### Fixed
+- PHPUnit tests failed with "no such table" because `:memory:` SQLite has no schema — fixed by adding `RefreshDatabase` trait to all feature tests
+- PHPUnit tests failed with "Vite manifest not found" because `@vite()` in Blade layouts requires built assets — fixed by adding `$this->withoutVite()` to base `TestCase::setUp()`
+- API route ordering in Enrollment Service — Specific routes (`enrollments/student/{id}`, `enrollments/course/{id}`) must come BEFORE wildcard `enrollments/{enrollment}` to prevent route conflicts
+
+### Learnings & Mistakes
+- **RefreshDatabase trait is mandatory** for any feature test touching Eloquent — PHPUnit uses `:memory:` SQLite by default and the in-memory DB has no tables until migrations run
+- **`withoutVite()` in tests** — Any Blade view using `@vite()` will crash in tests unless you call `$this->withoutVite()` or build assets before running tests. Adding it to the base TestCase is the cleanest fix.
+- **API route registration in Laravel 12** — No `install:api` needed (it bundles Sanctum). Instead, manually create `routes/api.php` and add `api: __DIR__.'/../routes/api.php'` to `bootstrap/app.php` `withRouting()`
+- **Form Request `authorize()` defaults to `false`** — Scaffolded Form Requests deny all requests by default. Must change to `return true;` for each request class.
+- **Http::fake() for testing inter-service calls** — Enrollment Service tests use `Http::fake()` to mock responses from Student and Course services, avoiding dependency on running services during testing
+- **Route ordering matters** — Specific routes like `/enrollments/student/{id}` must be registered before `/enrollments/{enrollment}` or the wildcard catches the request first
+- **Cascade delete is best-effort** — Student/Course controllers wrap enrollment-cleanup HTTP calls in try/catch so a service outage doesn't block the primary delete operation
+- **`vendor/bin/pint --dirty`** should be run before every commit — it caught 13 style issues across all services (class_attributes_separation, concat_space, line_ending, blank_line_between_methods)
+- **34/34 tests passing** across all three services after all fixes applied
