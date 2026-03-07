@@ -68,47 +68,135 @@ function esc(str) {
 
 // ========== Toast Notifications ==========
 
-function showToast(message, type = 'success') {
+function showToast(message, type = 'success', title = null) {
+    const isSuccess = type === 'success';
+    const autoClose = 3500;
+    const color = isSuccess ? '#10b981' : '#ef4444';
+
     const toast = document.createElement('div');
-    toast.className = type === 'success'
-        ? 'bg-green-500 text-white px-4 py-2 rounded shadow text-sm font-medium'
-        : 'bg-red-500 text-white px-4 py-2 rounded shadow text-sm font-medium';
-    toast.textContent = message;
+    toast.className = 'flex items-start gap-3 bg-white border border-gray-200 shadow-lg rounded-lg px-4 py-3 min-w-[320px] max-w-sm relative overflow-hidden toast-enter';
+    toast.style.borderLeftWidth = '4px';
+    toast.style.borderLeftColor = color;
+
+    const iconSvg = isSuccess
+        ? '<svg class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>'
+        : '<svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>';
+
+    const titleText = title || (isSuccess ? 'Success' : 'Error');
+
+    toast.innerHTML = `
+        ${iconSvg}
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900">${esc(titleText)}</p>
+            <p class="text-sm text-gray-600 mt-0.5">${esc(message)}</p>
+        </div>
+        <button class="toast-dismiss text-gray-400 hover:text-gray-600 shrink-0 mt-0.5" aria-label="Dismiss">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+        </button>
+        <div class="toast-progress absolute bottom-0 left-0 h-0.5" style="background:${color};width:100%;"></div>
+    `;
+
+    toast.querySelector('.toast-dismiss').addEventListener('click', () => dismissToast(toast));
+
+    const progressBar = toast.querySelector('.toast-progress');
+    progressBar.style.transition = `width ${autoClose}ms linear`;
+    requestAnimationFrame(() => { progressBar.style.width = '0%'; });
+
     toastContainer.appendChild(toast);
-    setTimeout(() => {
-        toast.style.transition = 'opacity 0.3s';
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    const timer = setTimeout(() => dismissToast(toast), autoClose);
+    toast._timer = timer;
+}
+
+function dismissToast(toast) {
+    if (toast._dismissed) return;
+    toast._dismissed = true;
+    clearTimeout(toast._timer);
+    toast.style.transition = 'opacity 0.3s, transform 0.3s';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => toast.remove(), 300);
 }
 
 // ========== Status Badge Helpers ==========
 
 function setOnline(badge) {
-    badge.textContent = '🟢 Online';
-    badge.className = 'bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full';
+    badge.innerHTML = '<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span> Online';
+    badge.className = 'inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-medium px-2.5 py-0.5 rounded-full';
 }
 
 function setOffline(badge) {
-    badge.textContent = '🔴 Unavailable';
-    badge.className = 'bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full';
+    badge.innerHTML = '<span class="inline-flex rounded-full h-2 w-2 bg-red-500"></span> Offline';
+    badge.className = 'inline-flex items-center gap-1.5 bg-red-50 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full';
 }
 
-function showUnavailable(tableArea, formBox) {
+function showUnavailable(tableArea, formBox, retryFn) {
     formBox.classList.add('hidden');
     tableArea.innerHTML = `
-        <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-lg text-center">
-            <p class="font-medium">⚠️ Service unavailable — try again later</p>
+        <div class="bg-amber-50 border border-amber-200 text-amber-800 p-6 rounded-lg text-center">
+            <svg class="w-8 h-8 mx-auto mb-2 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+            <p class="font-medium mb-3">Service unavailable</p>
+            <button class="retry-btn inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/></svg>
+                Retry
+            </button>
         </div>`;
+    if (retryFn) {
+        tableArea.querySelector('.retry-btn').addEventListener('click', () => {
+            formBox.classList.remove('hidden');
+            retryFn();
+        });
+    }
 }
 
 function showFormBox(formBox) {
     formBox.classList.remove('hidden');
 }
 
+// ========== Skeleton Loading ==========
+
+function showSkeleton(tbody, cols = 4) {
+    const rows = Array.from({ length: 3 }, () => {
+        const tds = Array.from({ length: cols }, (_, i) => {
+            const w = i === 0 ? 'w-32' : i === cols - 1 ? 'w-16 ml-auto' : 'w-24';
+            return `<td class="px-4 py-3.5"><div class="h-3.5 ${w} bg-gray-200 rounded animate-pulse"></div></td>`;
+        }).join('');
+        return `<tr class="border-b border-gray-50">${tds}</tr>`;
+    }).join('');
+    tbody.innerHTML = rows;
+}
+
+// ========== Confirm Modal ==========
+
+let modalResolve = null;
+const confirmModal = document.getElementById('confirm-modal');
+const confirmModalMsg = document.getElementById('confirm-modal-message');
+
+function showConfirmModal(message) {
+    return new Promise((resolve) => {
+        modalResolve = resolve;
+        confirmModalMsg.textContent = message;
+        confirmModal.classList.remove('hidden');
+        requestAnimationFrame(() => confirmModal.querySelector('.modal-panel').classList.add('modal-visible'));
+    });
+}
+
+function hideConfirmModal(result) {
+    confirmModal.querySelector('.modal-panel').classList.remove('modal-visible');
+    setTimeout(() => confirmModal.classList.add('hidden'), 150);
+    if (modalResolve) {
+        modalResolve(result);
+        modalResolve = null;
+    }
+}
+
+document.getElementById('confirm-modal-cancel').addEventListener('click', () => hideConfirmModal(false));
+document.getElementById('confirm-modal-confirm').addEventListener('click', () => hideConfirmModal(true));
+confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) hideConfirmModal(false); });
+
 // ========== STUDENTS ==========
 
 async function loadStudents() {
+    showSkeleton(studentsTbody, 4);
     try {
         const { data } = await axios.get(`${STUDENT_API}/students`);
         const students = data.data ?? data;
@@ -142,7 +230,7 @@ async function loadStudents() {
         serviceStatus.students = false;
         setOffline(studentStatus);
         studentCount.textContent = '–';
-        showUnavailable(studentTableArea, studentFormBox);
+        showUnavailable(studentTableArea, studentFormBox, loadStudents);
     }
 }
 
@@ -171,7 +259,8 @@ studentForm.addEventListener('submit', async (e) => {
 });
 
 window.deleteStudent = async function(id) {
-    if (!confirm('Delete this student? Their enrollments will also be removed.')) return;
+    const confirmed = await showConfirmModal('Delete this student? Their enrollments will also be removed.');
+    if (!confirmed) return;
 
     try {
         await axios.delete(`${STUDENT_API}/students/${id}`);
@@ -187,6 +276,7 @@ window.deleteStudent = async function(id) {
 // ========== COURSES ==========
 
 async function loadCourses() {
+    showSkeleton(coursesTbody, 4);
     try {
         const { data } = await axios.get(`${COURSE_API}/courses`);
         const courses = data.data ?? data;
@@ -222,7 +312,7 @@ async function loadCourses() {
         serviceStatus.courses = false;
         setOffline(courseStatus);
         courseCount.textContent = '–';
-        showUnavailable(courseTableArea, courseFormBox);
+        showUnavailable(courseTableArea, courseFormBox, loadCourses);
     }
 }
 
@@ -251,7 +341,8 @@ courseForm.addEventListener('submit', async (e) => {
 });
 
 window.deleteCourse = async function(id) {
-    if (!confirm('Delete this course? Related enrollments will also be removed.')) return;
+    const confirmed = await showConfirmModal('Delete this course? Related enrollments will also be removed.');
+    if (!confirmed) return;
 
     try {
         await axios.delete(`${COURSE_API}/courses/${id}`);
@@ -267,6 +358,7 @@ window.deleteCourse = async function(id) {
 // ========== ENROLLMENTS ==========
 
 async function loadEnrollments() {
+    showSkeleton(enrollmentsTbody, 4);
     try {
         const { data } = await axios.get(`${ENROLLMENT_API}/enrollments`);
         const enrollments = data.data ?? data;
@@ -311,7 +403,7 @@ async function loadEnrollments() {
         serviceStatus.enrollments = false;
         setOffline(enrollmentStatus);
         enrollmentCount.textContent = '–';
-        showUnavailable(enrollTableArea, enrollFormBox);
+        showUnavailable(enrollTableArea, enrollFormBox, loadEnrollments);
     }
 }
 
@@ -386,7 +478,8 @@ enrollForm.addEventListener('submit', async (e) => {
 });
 
 window.deleteEnrollment = async function(id) {
-    if (!confirm('Remove this enrollment?')) return;
+    const confirmed = await showConfirmModal('Remove this enrollment?');
+    if (!confirmed) return;
 
     try {
         await axios.delete(`${ENROLLMENT_API}/enrollments/${id}`);

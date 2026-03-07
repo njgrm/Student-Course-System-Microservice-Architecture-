@@ -19,9 +19,6 @@ class StudentManager extends Component
 
     public bool $showForm = false;
 
-    /** Flash message */
-    public string $successMessage = '';
-
     protected function rules(): array
     {
         $uniqueRule = $this->editingId
@@ -58,10 +55,10 @@ class StudentManager extends Component
         if ($this->editingId) {
             $student = Student::findOrFail($this->editingId);
             $student->update($validated);
-            $this->successMessage = 'Student updated successfully.';
+            $this->dispatch('show-toast', type: 'success', message: 'Student updated successfully.');
         } else {
             Student::create($validated);
-            $this->successMessage = 'Student created successfully.';
+            $this->dispatch('show-toast', type: 'success', message: 'Student created successfully.');
         }
 
         $this->resetForm();
@@ -71,7 +68,7 @@ class StudentManager extends Component
     public function delete(int $id): void
     {
         Student::findOrFail($id)->delete();
-        $this->successMessage = 'Student deleted successfully.';
+        $this->dispatch('show-toast', type: 'success', message: 'Student deleted successfully.');
     }
 
     public function cancel(): void

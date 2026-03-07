@@ -23,6 +23,9 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+# Local prompt files — not for version control
+prompt.md
+
 # Service-level ignores (each microservice has its own vendor/node_modules)
 services/*/vendor/
 services/*/node_modules/

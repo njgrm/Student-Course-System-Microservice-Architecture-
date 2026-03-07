@@ -6,9 +6,13 @@
     <title>Student Course System — Dashboard</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/dashboard.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/dashboard.js'])
     <style>
         body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+        .toast-enter { animation: slideInRight 0.3s ease-out; }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        .modal-panel { opacity: 0; transform: scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .modal-panel.modal-visible { opacity: 1; transform: scale(1); }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -221,6 +225,23 @@
         </section>
 
     </main>
+
+    {{-- Confirm Modal --}}
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="modal-panel bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 shrink-0">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Confirm Delete</h3>
+            </div>
+            <p id="confirm-modal-message" class="text-sm text-gray-600 mb-6">Are you sure?</p>
+            <div class="flex items-center justify-end gap-3">
+                <button id="confirm-modal-cancel" class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Cancel</button>
+                <button id="confirm-modal-confirm" class="px-4 py-2 rounded-md text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
 
     {{-- Toast container --}}
     <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>

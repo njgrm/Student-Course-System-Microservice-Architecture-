@@ -19,9 +19,6 @@ class CourseManager extends Component
 
     public bool $showForm = false;
 
-    /** Flash message */
-    public string $successMessage = '';
-
     protected function rules(): array
     {
         return [
@@ -54,10 +51,10 @@ class CourseManager extends Component
         if ($this->editingId) {
             $course = Course::findOrFail($this->editingId);
             $course->update($validated);
-            $this->successMessage = 'Course updated successfully.';
+            $this->dispatch('show-toast', type: 'success', message: 'Course updated successfully.');
         } else {
             Course::create($validated);
-            $this->successMessage = 'Course created successfully.';
+            $this->dispatch('show-toast', type: 'success', message: 'Course created successfully.');
         }
 
         $this->resetForm();
@@ -67,7 +64,7 @@ class CourseManager extends Component
     public function delete(int $id): void
     {
         Course::findOrFail($id)->delete();
-        $this->successMessage = 'Course deleted successfully.';
+        $this->dispatch('show-toast', type: 'success', message: 'Course deleted successfully.');
     }
 
     public function cancel(): void

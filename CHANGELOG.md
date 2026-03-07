@@ -1,5 +1,46 @@
 # Changelog
 
+## [2026-03-07] — UI/UX Polish: Custom Modals, Rich Toasts, Skeleton Loading, Status Dots, Retry
+
+### Added
+- **Custom confirm modals** replacing all `window.confirm()` (gateway) and `wire:confirm` (Livewire services)
+  - Gateway: Vanilla JS modal with Promise-based `showConfirmModal()` in `resources/js/dashboard.js`, modal HTML in `resources/views/dashboard.blade.php`
+  - Services: Alpine.js `x-data` modal with `$wire.delete(deleteId)` in all 3 Livewire blade views
+- **Rich toast notifications** with icon (✓/✕), title, message, dismiss ✕ button, and animated progress bar
+  - Gateway: Rewritten `showToast()` + `dismissToast()` in `dashboard.js`
+  - Services: `Livewire.on('show-toast', ...)` listener in all 3 layout files, dispatched from Livewire components
+- **Skeleton loading rows** — 3 animated placeholder rows shown in each table while data loads (`showSkeleton()` in `dashboard.js`)
+- **Pulsing status dots** — green pulsing dot for Online, solid red dot for Offline (replaced emoji text badges)
+- **Retry button** on service-unavailable cards — `showUnavailable()` now accepts a `retryFn` callback and renders a styled Retry button
+- **Alpine.js** installed in root gateway app (`alpinejs ^3.15.8`, initialized in `resources/js/app.js`)
+- `[x-cloak]` CSS rule added to all 3 service layouts
+- `@keyframes slideInRight` animation in gateway and all service layouts
+- `modal-panel` / `modal-visible` CSS transitions in gateway
+
+### Changed
+- `resources/js/dashboard.js` — Major rewrite: showToast (rich), setOnline/setOffline (dots), showUnavailable (retry), showSkeleton (new), showConfirmModal (new), all 3 delete functions use modal
+- `resources/views/dashboard.blade.php` — Added `app.js` to `@vite`, CSS animations, confirm modal HTML
+- `resources/js/app.js` — Now imports and starts Alpine.js
+- `services/student-service/app/Livewire/StudentManager.php` — Removed `$successMessage` property, replaced with `$this->dispatch('show-toast', type: ..., message: ...)`
+- `services/course-service/app/Livewire/CourseManager.php` — Same dispatch pattern
+- `services/enrollment-service/app/Livewire/EnrollmentManager.php` — Removed both `$successMessage` and `$errorMessage`, all 7 message assignments replaced with dispatch
+- `services/student-service/resources/views/livewire/student-manager.blade.php` — Removed `@if($successMessage)` banner, removed `wire:confirm`, added `x-data` + Alpine modal
+- `services/course-service/resources/views/livewire/course-manager.blade.php` — Same pattern
+- `services/enrollment-service/resources/views/livewire/enrollment-manager.blade.php` — Removed both message banners, removed `wire:confirm`, added Alpine modal
+- All 3 service `layouts/app.blade.php` — Added toast stack container, `Livewire.on('show-toast')` JS listener, `x-cloak` CSS, slideIn animation
+
+### Fixed
+- No `window.confirm()` or `wire:confirm` anywhere in the codebase
+- Toast messages now stack correctly and auto-dismiss with visual progress indicator
+
+### Learnings & Mistakes
+- Livewire 4 `$this->dispatch('show-toast', type: ..., message: ...)` fires an event that `Livewire.on('show-toast', callback)` can catch — the callback receives the params as an array, so `event[0]` unwraps it
+- Alpine.js is auto-bundled with Livewire 4, so no manual install needed in services — but `x-cloak` CSS must be explicit in layouts to prevent flash of hidden content
+- Gateway needs Alpine installed separately via npm since it doesn't use Livewire
+- Tailwind CSS 4 can't use dynamic class strings like `` bg-${color}-500 `` — must use inline `style` attributes for dynamic colors
+- The confirm modal in gateway uses a Promise pattern: `showConfirmModal()` returns a Promise resolved by button clicks, enabling `const confirmed = await showConfirmModal(msg)` — clean async flow
+- All 34/34 tests still pass after the refactor — the dispatch changes don't affect API test assertions
+
 ## [2026-03-07] — Gateway Single-Page Dashboard (SAR2-Style Unified UI)
 
 ### Added

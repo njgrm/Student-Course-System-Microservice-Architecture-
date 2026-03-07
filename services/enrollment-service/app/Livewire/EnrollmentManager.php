@@ -21,10 +21,6 @@ class EnrollmentManager extends Component
     /** UI state */
     public bool $showForm = false;
 
-    public string $successMessage = '';
-
-    public string $errorMessage = '';
-
     protected function rules(): array
     {
         return [
@@ -53,12 +49,12 @@ class EnrollmentManager extends Component
         try {
             $studentResponse = Http::get("http://localhost:8001/api/students/{$validated['student_id']}");
             if ($studentResponse->failed()) {
-                $this->errorMessage = 'Student not found in Student Service.';
+                $this->dispatch('show-toast', type: 'error', message: 'Student not found in Student Service.');
 
                 return;
             }
         } catch (\Exception $e) {
-            $this->errorMessage = 'Student Service is unavailable.';
+            $this->dispatch('show-toast', type: 'error', message: 'Student Service is unavailable.');
 
             return;
         }
@@ -67,12 +63,12 @@ class EnrollmentManager extends Component
         try {
             $courseResponse = Http::get("http://localhost:8002/api/courses/{$validated['course_id']}");
             if ($courseResponse->failed()) {
-                $this->errorMessage = 'Course not found in Course Service.';
+                $this->dispatch('show-toast', type: 'error', message: 'Course not found in Course Service.');
 
                 return;
             }
         } catch (\Exception $e) {
-            $this->errorMessage = 'Course Service is unavailable.';
+            $this->dispatch('show-toast', type: 'error', message: 'Course Service is unavailable.');
 
             return;
         }
@@ -83,7 +79,7 @@ class EnrollmentManager extends Component
             ->exists();
 
         if ($exists) {
-            $this->errorMessage = 'Student is already enrolled in this course.';
+            $this->dispatch('show-toast', type: 'error', message: 'Student is already enrolled in this course.');
 
             return;
         }
@@ -94,8 +90,7 @@ class EnrollmentManager extends Component
             'enrolled_at' => now(),
         ]);
 
-        $this->successMessage = 'Enrollment created successfully.';
-        $this->errorMessage = '';
+        $this->dispatch('show-toast', type: 'success', message: 'Enrollment created successfully.');
         $this->resetForm();
         $this->showForm = false;
     }
@@ -103,7 +98,7 @@ class EnrollmentManager extends Component
     public function delete(int $id): void
     {
         Enrollment::findOrFail($id)->delete();
-        $this->successMessage = 'Enrollment deleted successfully.';
+        $this->dispatch('show-toast', type: 'success', message: 'Enrollment deleted successfully.');
     }
 
     public function cancel(): void
@@ -116,7 +111,6 @@ class EnrollmentManager extends Component
     {
         $this->student_id = '';
         $this->course_id = '';
-        $this->errorMessage = '';
         $this->resetValidation();
     }
 
