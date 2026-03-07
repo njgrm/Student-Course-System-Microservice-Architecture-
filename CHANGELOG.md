@@ -1,5 +1,72 @@
 # Changelog
 
+## [2026-03-07] — Retry Fix, Cache-Proof Detection, Service Redirects
+
+### Added
+- **`ensureTable()` helper** in `resources/js/dashboard.js` — rebuilds table + thead + tbody DOM structure if destroyed by `showUnavailable()`, returns a fresh tbody reference
+- **Axios `fetch` adapter** (`axios.defaults.adapter = 'fetch'`) with `fetchOptions: { cache: 'no-store' }` — uses the browser Fetch API's native no-cache directive, the most bulletproof way to bypass HTTP caching
+
+### Changed
+- `resources/js/dashboard.js` — `studentsTbody`, `coursesTbody`, `enrollmentsTbody` changed from `const` to `let` so they can be reassigned by `ensureTable()` after DOM rebuild
+- `resources/js/dashboard.js` — Each `load*()` function now calls `ensureTable()` at the start to guarantee the table exists before writing skeleton/data
+- `resources/js/dashboard.js` — Each `load*()` function now calls `showFormBox()` at the start so the form is visible during retry (previously the retry handler in `showUnavailable` managed this, but it flashed the form briefly before potential re-failure)
+- `resources/js/dashboard.js` — `showUnavailable()` retry handler simplified to just call `retryFn` directly (no form visibility management)
+- `resources/js/dashboard.js` — Axios timeout reduced from 8000ms to 5000ms
+- `services/student-service/routes/web.php` — Now redirects `GET /` to `http://localhost:8000` (gateway dashboard)
+- `services/course-service/routes/web.php` — Same redirect to gateway
+- `services/enrollment-service/routes/web.php` — Same redirect to gateway
+
+### Fixed
+- **Retry button not reloading data**: When `showUnavailable()` replaced `tableArea.innerHTML`, it destroyed the `<table>` and `<tbody>` elements. The global `studentsTbody`/`coursesTbody`/`enrollmentsTbody` references became stale pointers to detached DOM nodes. Clicking "Retry" called the load function which wrote data to these invisible detached elements — status badge updated to "Online" but the unavailable card stayed visible. Fixed by adding `ensureTable()` which recreates the table DOM if needed and returns a fresh reference.
+- **False "Online" status when services are down**: Investigation via `netstat` revealed all 4 ports (8000-8003) were actually LISTENING due to leftover `php artisan serve` processes from previous terminal sessions. Additionally, switched from query-param-only cache busting to Axios's native `fetch` adapter with `cache: 'no-store'` for guaranteed browser cache bypass at the Fetch API level.
+- **Service ports showing individual UIs**: Navigating to `localhost:8001`, `8002`, or `8003` in a browser showed each service's standalone Blade view. Now all three redirect to the gateway dashboard at `localhost:8000`, enforcing the dashboard as the single UI entry point.
+
+### Learnings & Mistakes
+- The "false Online" bug was NOT a browser caching issue — it was caused by leftover `php artisan serve` processes from old terminal sessions still listening on ports 8001/8002/8003. Always check `netstat -ano | Select-String ":800"` before assuming a port is down.
+- When `innerHTML` is replaced on a parent element, all child element references held in JS variables become **stale/detached** — writing to them silently succeeds but produces no visible result. This is a classic DOM reference invalidation bug.
+- The `fetch` adapter in Axios 1.7+ (`adapter: 'fetch'`) enables `fetchOptions: { cache: 'no-store' }` which is the browser's native no-cache directive — more reliable than query param tricks or custom headers (which trigger CORS preflight).
+- Service web routes should redirect to the gateway from day one in a microservices dashboard architecture — individual service UIs confuse users who don't understand the port-based architecture.
+
+## [2026-03-07] — Dark Mode Redesign + Offline Detection Bug Fix
+
+### Added
+- **Dark mode UI** for the entire gateway dashboard — zinc-based dark palette with accent color glows
+  - Body: `bg-[#0a0a0f]` near-black background with `text-zinc-100` default text
+  - Header: sticky `bg-zinc-900/80` with backdrop blur, gradient logo badge (violet→teal), gradient accent line at bottom
+  - JetBrains Mono font loaded for monospace elements (counts, version badge)
+  - Section cards: `bg-zinc-900/60` with subtle `border-zinc-800/50` borders and colored glow effects (`.glow-violet`, `.glow-teal`, `.glow-amber`)
+  - Section headers: thin colored accent bars (1px rounded-full dividers) instead of thick solid colored bars
+  - Form inputs: `bg-zinc-800/50` dark inputs with transparent accent focus rings (`focus:border-{color}-500/50`)
+  - Tables: dark borders (`border-zinc-800/50`), hover rows (`hover:bg-zinc-800/30`)
+  - Count badges: transparent colored backgrounds (`bg-violet-500/10 text-violet-400`, etc.)
+  - Status badges: dark pill backgrounds (`bg-zinc-800/80`)
+  - Modal: `bg-zinc-900 border-zinc-800` dark card with `bg-red-500/10` danger icon
+  - Toast: `bg-zinc-900 border-zinc-700/50` dark card
+  - Skeleton loading: dark shimmer rows (`bg-zinc-800`)
+  - Unavailable cards: `bg-red-500/5 border-red-500/20` dark error state
+- **Accent color system**: Violet for Students, Teal for Courses, Amber for Enrollments (shifted from indigo/emerald/amber)
+- **Axios cache-busting interceptor** — appends `_t=Date.now()` to all GET requests to prevent browser-cached responses
+- **Axios timeout** — `axios.defaults.timeout = 8000` for fast failure when services are down
+
+### Changed
+- `resources/views/dashboard.blade.php` — Complete dark mode conversion of all HTML elements (header, 3 section cards, forms, inputs, tables, modal, toast)
+- `resources/js/dashboard.js` — Updated all JS-rendered HTML (table rows, skeleton, toast, status badges, unavailable cards) with dark mode classes
+- Section headers redesigned: removed thick colored bars, replaced with thin accent divider + icon + title on dark background
+- Buttons: rounded-lg with no shadow, lighter hover states (`hover:bg-{color}-500`)
+- Typography: smaller, tighter spacing (text-[11px] labels, text-sm content, text-[10px] badges)
+- `v1.0` version badge in header (monospace, dark pill)
+
+### Fixed
+- **Browser caching bug**: Student and Course sections falsely showed "Online" after killing services because the browser served cached GET responses. Fixed by adding an Axios request interceptor that appends a `_t` timestamp query parameter to every GET request, busting the browser's HTTP cache.
+- **Slow timeout on dead services**: Added `axios.defaults.timeout = 8000` so requests to killed services fail within 8 seconds instead of hanging indefinitely.
+
+### Learnings & Mistakes
+- Browser HTTP caching of GET requests to `localhost:800x/api/*` endpoints is a real issue on Windows — `php artisan serve` does not send `Cache-Control: no-store` headers, so browsers may serve stale 200 responses even after the server is killed
+- The bulletproof fix is a cache-busting query parameter (`_t=Date.now()`) via Axios interceptor, not just response headers
+- Dark mode conversions require updating BOTH the Blade template (static HTML) AND the JS-generated HTML (table rows, skeleton, toast, unavailable cards, status badges) — missing either creates a jarring light/dark inconsistency
+- Tailwind's opacity modifier syntax (`bg-zinc-900/60`, `border-zinc-800/50`) creates excellent glass-morphism effects on dark backgrounds
+- Custom CSS glow classes (`box-shadow: 0 0 40px -8px rgba(...)`) add subtle depth cues that differentiate cards from the background without heavy borders
+
 ## [2026-03-07] — UI/UX Polish: Custom Modals, Rich Toasts, Skeleton Loading, Status Dots, Retry
 
 ### Added

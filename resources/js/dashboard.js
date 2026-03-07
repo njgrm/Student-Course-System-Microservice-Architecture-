@@ -7,6 +7,17 @@
 
 import axios from 'axios';
 
+// ========== Axios Config: no-cache + timeout ==========
+axios.defaults.timeout = 5000;
+axios.defaults.adapter = 'fetch';
+axios.interceptors.request.use((config) => {
+    config.fetchOptions = { cache: 'no-store' };
+    if (config.method === 'get') {
+        config.params = { ...config.params, _t: Date.now() };
+    }
+    return config;
+});
+
 // ========== Service Base URLs ==========
 const STUDENT_API    = 'http://localhost:8001/api';
 const COURSE_API     = 'http://localhost:8002/api';
@@ -27,7 +38,7 @@ const studentFormBox   = document.getElementById('student-form-container');
 const studentNameIn    = document.getElementById('student-name');
 const studentEmailIn   = document.getElementById('student-email');
 const studentAgeIn     = document.getElementById('student-age');
-const studentsTbody    = document.getElementById('students-tbody');
+let   studentsTbody    = document.getElementById('students-tbody');
 const studentCount     = document.getElementById('student-count');
 const studentStatus    = document.getElementById('student-status');
 const studentTableArea = document.getElementById('student-table-area');
@@ -38,7 +49,7 @@ const courseFormBox   = document.getElementById('course-form-container');
 const courseNameIn    = document.getElementById('course-name');
 const courseDescIn    = document.getElementById('course-desc');
 const courseCreditsIn = document.getElementById('course-credits');
-const coursesTbody    = document.getElementById('courses-tbody');
+let   coursesTbody    = document.getElementById('courses-tbody');
 const courseCount     = document.getElementById('course-count');
 const courseStatus    = document.getElementById('course-status');
 const courseTableArea = document.getElementById('course-table-area');
@@ -50,7 +61,7 @@ const enrollStudentSel = document.getElementById('enroll-student');
 const enrollCourseSel  = document.getElementById('enroll-course');
 const enrollSubmitBtn  = document.getElementById('enroll-submit-btn');
 const enrollDepWarn    = document.getElementById('enrollment-dep-warning');
-const enrollmentsTbody = document.getElementById('enrollments-tbody');
+let   enrollmentsTbody = document.getElementById('enrollments-tbody');
 const enrollmentCount  = document.getElementById('enrollment-count');
 const enrollmentStatus = document.getElementById('enrollment-status');
 const enrollTableArea  = document.getElementById('enrollment-table-area');
@@ -74,23 +85,23 @@ function showToast(message, type = 'success', title = null) {
     const color = isSuccess ? '#10b981' : '#ef4444';
 
     const toast = document.createElement('div');
-    toast.className = 'flex items-start gap-3 bg-white border border-gray-200 shadow-lg rounded-lg px-4 py-3 min-w-[320px] max-w-sm relative overflow-hidden toast-enter';
-    toast.style.borderLeftWidth = '4px';
+    toast.className = 'flex items-start gap-3 bg-zinc-900 border border-zinc-700/50 shadow-xl rounded-lg px-4 py-3 min-w-[320px] max-w-sm relative overflow-hidden toast-enter';
+    toast.style.borderLeftWidth = '3px';
     toast.style.borderLeftColor = color;
 
     const iconSvg = isSuccess
-        ? '<svg class="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>'
-        : '<svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>';
+        ? '<svg class="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>'
+        : '<svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>';
 
     const titleText = title || (isSuccess ? 'Success' : 'Error');
 
     toast.innerHTML = `
         ${iconSvg}
         <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-gray-900">${esc(titleText)}</p>
-            <p class="text-sm text-gray-600 mt-0.5">${esc(message)}</p>
+            <p class="text-sm font-semibold text-zinc-100">${esc(titleText)}</p>
+            <p class="text-sm text-zinc-400 mt-0.5">${esc(message)}</p>
         </div>
-        <button class="toast-dismiss text-gray-400 hover:text-gray-600 shrink-0 mt-0.5" aria-label="Dismiss">
+        <button class="toast-dismiss text-zinc-500 hover:text-zinc-300 shrink-0 mt-0.5" aria-label="Dismiss">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
         </button>
         <div class="toast-progress absolute bottom-0 left-0 h-0.5" style="background:${color};width:100%;"></div>
@@ -120,31 +131,28 @@ function dismissToast(toast) {
 // ========== Status Badge Helpers ==========
 
 function setOnline(badge) {
-    badge.innerHTML = '<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span> Online';
-    badge.className = 'inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-medium px-2.5 py-0.5 rounded-full';
+    badge.innerHTML = '<span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span></span> Online';
+    badge.className = 'inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-medium px-2 py-0.5 rounded-full';
 }
 
 function setOffline(badge) {
-    badge.innerHTML = '<span class="inline-flex rounded-full h-2 w-2 bg-red-500"></span> Offline';
-    badge.className = 'inline-flex items-center gap-1.5 bg-red-50 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full';
+    badge.innerHTML = '<span class="inline-flex rounded-full h-2 w-2 bg-red-400"></span> Offline';
+    badge.className = 'inline-flex items-center gap-1.5 bg-red-500/10 text-red-400 text-[10px] font-medium px-2 py-0.5 rounded-full';
 }
 
 function showUnavailable(tableArea, formBox, retryFn) {
     formBox.classList.add('hidden');
     tableArea.innerHTML = `
-        <div class="bg-amber-50 border border-amber-200 text-amber-800 p-6 rounded-lg text-center">
-            <svg class="w-8 h-8 mx-auto mb-2 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
-            <p class="font-medium mb-3">Service unavailable</p>
-            <button class="retry-btn inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">
+        <div class="bg-red-500/5 border border-red-500/20 text-red-300 p-6 rounded-lg text-center">
+            <svg class="w-8 h-8 mx-auto mb-2 text-red-400/60" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+            <p class="font-medium text-sm text-zinc-300 mb-3">Service unavailable</p>
+            <button class="retry-btn inline-flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182"/></svg>
                 Retry
             </button>
         </div>`;
     if (retryFn) {
-        tableArea.querySelector('.retry-btn').addEventListener('click', () => {
-            formBox.classList.remove('hidden');
-            retryFn();
-        });
+        tableArea.querySelector('.retry-btn').addEventListener('click', retryFn);
     }
 }
 
@@ -157,12 +165,29 @@ function showFormBox(formBox) {
 function showSkeleton(tbody, cols = 4) {
     const rows = Array.from({ length: 3 }, () => {
         const tds = Array.from({ length: cols }, (_, i) => {
-            const w = i === 0 ? 'w-32' : i === cols - 1 ? 'w-16 ml-auto' : 'w-24';
-            return `<td class="px-4 py-3.5"><div class="h-3.5 ${w} bg-gray-200 rounded animate-pulse"></div></td>`;
+            const w = i === 0 ? 'w-28' : i === cols - 1 ? 'w-14 ml-auto' : 'w-20';
+            return `<td class="px-3 py-3"><div class="h-3 ${w} bg-zinc-800 rounded animate-pulse"></div></td>`;
         }).join('');
-        return `<tr class="border-b border-gray-50">${tds}</tr>`;
+        return `<tr class="border-b border-zinc-800/30">${tds}</tr>`;
     }).join('');
     tbody.innerHTML = rows;
+}
+
+// ========== Ensure Table Exists (rebuild after showUnavailable) ==========
+
+function ensureTable(tableArea, tableId, tbodyId, headers) {
+    let tbody = tableArea.querySelector(`#${tbodyId}`);
+    if (!tbody) {
+        const headerRow = headers.map(([label, align]) =>
+            `<th class="px-3 py-2 text-${align} text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">${label}</th>`
+        ).join('');
+        tableArea.innerHTML = `<table id="${tableId}" class="w-full text-sm">
+            <thead><tr class="border-b border-zinc-800/50">${headerRow}</tr></thead>
+            <tbody id="${tbodyId}"></tbody>
+        </table>`;
+        tbody = tableArea.querySelector(`#${tbodyId}`);
+    }
+    return tbody;
 }
 
 // ========== Confirm Modal ==========
@@ -196,6 +221,10 @@ confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) h
 // ========== STUDENTS ==========
 
 async function loadStudents() {
+    studentsTbody = ensureTable(studentTableArea, 'students-table', 'students-tbody', [
+        ['Name', 'left'], ['Email', 'left'], ['Age', 'left'], ['Actions', 'right']
+    ]);
+    showFormBox(studentFormBox);
     showSkeleton(studentsTbody, 4);
     try {
         const { data } = await axios.get(`${STUDENT_API}/students`);
@@ -208,18 +237,18 @@ async function loadStudents() {
         studentCount.textContent = count;
 
         if (students.length === 0) {
-            studentsTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">No students yet.</td></tr>';
+            studentsTbody.innerHTML = '<tr><td colspan="4" class="px-3 py-8 text-center text-zinc-600 italic text-sm">No students yet.</td></tr>';
             return;
         }
 
         studentsTbody.innerHTML = students.map(s => `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="px-4 py-3 font-medium text-gray-900">${esc(s.full_name)}</td>
-                <td class="px-4 py-3 text-gray-600">${esc(s.email)}</td>
-                <td class="px-4 py-3 text-gray-600">${s.age}</td>
-                <td class="px-4 py-3 text-right">
+            <tr class="hover:bg-zinc-800/30 transition-colors border-b border-zinc-800/30 last:border-0">
+                <td class="px-3 py-2.5 font-medium text-zinc-200 text-sm">${esc(s.full_name)}</td>
+                <td class="px-3 py-2.5 text-zinc-400 text-sm">${esc(s.email)}</td>
+                <td class="px-3 py-2.5 text-zinc-400 text-sm font-mono">${s.age}</td>
+                <td class="px-3 py-2.5 text-right">
                     <button onclick="window.deleteStudent(${s.id})"
-                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors">
+                        class="inline-flex items-center gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2 py-1 rounded text-sm font-medium transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                         Delete
                     </button>
@@ -276,6 +305,10 @@ window.deleteStudent = async function(id) {
 // ========== COURSES ==========
 
 async function loadCourses() {
+    coursesTbody = ensureTable(courseTableArea, 'courses-table', 'courses-tbody', [
+        ['Name', 'left'], ['Description', 'left'], ['Credits', 'left'], ['Actions', 'right']
+    ]);
+    showFormBox(courseFormBox);
     showSkeleton(coursesTbody, 4);
     try {
         const { data } = await axios.get(`${COURSE_API}/courses`);
@@ -288,20 +321,20 @@ async function loadCourses() {
         courseCount.textContent = count;
 
         if (courses.length === 0) {
-            coursesTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">No courses yet.</td></tr>';
+            coursesTbody.innerHTML = '<tr><td colspan="4" class="px-3 py-8 text-center text-zinc-600 italic text-sm">No courses yet.</td></tr>';
             return;
         }
 
         coursesTbody.innerHTML = courses.map(c => `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="px-4 py-3 font-medium text-gray-900">${esc(c.name)}</td>
-                <td class="px-4 py-3 text-gray-600 max-w-xs truncate">${esc(c.description)}</td>
-                <td class="px-4 py-3 text-gray-600">
-                    <span class="inline-flex items-center bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded">${c.credits} cr</span>
+            <tr class="hover:bg-zinc-800/30 transition-colors border-b border-zinc-800/30 last:border-0">
+                <td class="px-3 py-2.5 font-medium text-zinc-200 text-sm">${esc(c.name)}</td>
+                <td class="px-3 py-2.5 text-zinc-400 text-sm max-w-xs truncate">${esc(c.description)}</td>
+                <td class="px-3 py-2.5 text-zinc-400">
+                    <span class="inline-flex items-center bg-teal-500/10 text-teal-400 text-xs font-semibold px-2 py-0.5 rounded">${c.credits} cr</span>
                 </td>
-                <td class="px-4 py-3 text-right">
+                <td class="px-3 py-2.5 text-right">
                     <button onclick="window.deleteCourse(${c.id})"
-                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors">
+                        class="inline-flex items-center gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2 py-1 rounded text-sm font-medium transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                         Delete
                     </button>
@@ -358,6 +391,10 @@ window.deleteCourse = async function(id) {
 // ========== ENROLLMENTS ==========
 
 async function loadEnrollments() {
+    enrollmentsTbody = ensureTable(enrollTableArea, 'enrollments-table', 'enrollments-tbody', [
+        ['Student', 'left'], ['Course', 'left'], ['Enrolled At', 'left'], ['Actions', 'right']
+    ]);
+    showFormBox(enrollFormBox);
     showSkeleton(enrollmentsTbody, 4);
     try {
         const { data } = await axios.get(`${ENROLLMENT_API}/enrollments`);
@@ -370,29 +407,29 @@ async function loadEnrollments() {
         enrollmentCount.textContent = count;
 
         if (enrollments.length === 0) {
-            enrollmentsTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">No enrollments yet.</td></tr>';
+            enrollmentsTbody.innerHTML = '<tr><td colspan="4" class="px-3 py-8 text-center text-zinc-600 italic text-sm">No enrollments yet.</td></tr>';
             return;
         }
 
         enrollmentsTbody.innerHTML = enrollments.map(e => `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="px-4 py-3 font-medium text-gray-900">
+            <tr class="hover:bg-zinc-800/30 transition-colors border-b border-zinc-800/30 last:border-0">
+                <td class="px-3 py-2.5">
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold">
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-500/15 text-violet-400 text-[10px] font-bold">
                             ${esc(e.student_name?.charAt(0)?.toUpperCase() || '?')}
                         </span>
-                        ${esc(e.student_name || 'Unknown')}
+                        <span class="text-sm font-medium text-zinc-200">${esc(e.student_name || 'Unknown')}</span>
                     </div>
                 </td>
-                <td class="px-4 py-3 text-gray-600">
-                    <span class="inline-flex items-center bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded">
+                <td class="px-3 py-2.5">
+                    <span class="inline-flex items-center bg-teal-500/10 text-teal-400 text-xs font-semibold px-2 py-0.5 rounded">
                         ${esc(e.course_name || 'Unknown')}
                     </span>
                 </td>
-                <td class="px-4 py-3 text-gray-500">${new Date(e.enrolled_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-                <td class="px-4 py-3 text-right">
+                <td class="px-3 py-2.5 text-zinc-500 text-sm font-mono">${new Date(e.enrolled_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                <td class="px-3 py-2.5 text-right">
                     <button onclick="window.deleteEnrollment(${e.id})"
-                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors">
+                        class="inline-flex items-center gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2 py-1 rounded text-sm font-medium transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                         Remove
                     </button>
