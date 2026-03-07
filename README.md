@@ -59,10 +59,11 @@ This runs `php artisan migrate:fresh --seed` in each service, creating SQLite da
 ### 4. Build frontend assets
 
 ```bash
+npm run build
 npm run build:services
 ```
 
-This runs `npm run build` (Vite) in each service to generate the CSS/JS bundles.
+This runs Vite in the root gateway app and all three services to generate CSS/JS bundles.
 
 ### 5. Serve all services (single command)
 
@@ -70,13 +71,25 @@ This runs `npm run build` (Vite) in each service to generate the CSS/JS bundles.
 npm run serve:all
 ```
 
-This uses **concurrently** to start all three services in one terminal with color-coded output:
+This uses **concurrently** to start all three microservices in one terminal with color-coded output:
 
 - 🟣 **Student Service** → [http://localhost:8001](http://localhost:8001)
 - 🟢 **Course Service** → [http://localhost:8002](http://localhost:8002)
 - 🟡 **Enrollment Service** → [http://localhost:8003](http://localhost:8003)
 
 > **Alternative:** Run `.\serve-all.ps1` to open each service in its own PowerShell window.
+
+### 6. Start the gateway dashboard
+
+In a separate terminal:
+
+```bash
+php artisan serve --port=8000
+```
+
+- 🌐 **Dashboard** → [http://localhost:8000](http://localhost:8000)
+
+This is the **unified single-page dashboard** (like the SAR2 monolith UI) that shows all three sections — Students, Courses, and Enrollments — on one page. It calls the three microservice APIs via Axios with graceful degradation if any service is down.
 
 ---
 
@@ -168,6 +181,7 @@ cd services/enrollment-service && php artisan test
 | **Templates** | Blade + Tailwind CSS 4 |
 | **Assets** | Vite 7 |
 | **Database** | SQLite (one per service) |
+| **Gateway UI** | Blade + Axios + Tailwind CSS 4 (single-page dashboard) |
 | **Inter-service** | Laravel HTTP Client (`Http` facade) |
 | **Monolith** | Node.js, Express 4, vanilla JS |
 
@@ -176,12 +190,15 @@ cd services/enrollment-service && php artisan test
 ## Project Structure
 
 ```
+├── resources/
+│   ├── views/dashboard.blade.php   # Gateway single-page dashboard
+│   └── js/dashboard.js             # Axios API controller for dashboard
 ├── services/
-│   ├── student-service/      # Laravel app → :8001
-│   ├── course-service/       # Laravel app → :8002
-│   └── enrollment-service/   # Laravel app → :8003
-├── SAR2/                     # Node.js monolith (reference)
-├── serve-all.ps1             # PowerShell multi-window launcher
-├── package.json              # Root scripts (serve:all, build:services, etc.)
-└── CHANGELOG.md              # Project changelog
+│   ├── student-service/            # Laravel app → :8001
+│   ├── course-service/             # Laravel app → :8002
+│   └── enrollment-service/         # Laravel app → :8003
+├── SAR2/                           # Node.js monolith (reference)
+├── serve-all.ps1                   # PowerShell multi-window launcher
+├── package.json                    # Root scripts (serve:all, build:services, etc.)
+└── CHANGELOG.md                    # Project changelog
 ```

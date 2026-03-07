@@ -1,5 +1,48 @@
 # Changelog
 
+## [2026-03-07] — Gateway Single-Page Dashboard (SAR2-Style Unified UI)
+
+### Added
+- `resources/views/dashboard.blade.php` — Self-contained Blade template with three stacked sections (Students, Courses, Enrollments) on one page. Colored header bars with service status badges (🟢 Online / 🔴 Unavailable), inline add forms, data tables with count badges, toast notifications, and graceful degradation per section.
+- `resources/js/dashboard.js` — Axios-based frontend controller mirroring SAR2/public/script.js. Uses `Promise.allSettled` for parallel independent loading, per-section try/catch, dynamic enrollment dropdowns, service status tracking object, and HTML escaping utility.
+- `services/student-service/config/cors.php` — CORS config with `allowed_origins` set to `['http://localhost:8000', 'http://127.0.0.1:8000']`
+- `services/course-service/config/cors.php` — Same CORS config
+- `services/enrollment-service/config/cors.php` — Same CORS config
+
+### Changed
+- `routes/web.php` — Root route now serves `dashboard` view instead of `welcome`
+- `vite.config.js` — Added `resources/js/dashboard.js` as a Vite input alongside `app.js`
+
+### Fixed
+- CORS was silently blocked: `HandleCors` middleware was active by default in Laravel 12, but without a `config/cors.php` file, `config('cors')` returned `[]` and `hasMatchingPath()` always returned false — no CORS headers were ever sent. Creating the config file with `paths => ['api/*']` fixed it.
+
+### Learnings & Mistakes
+- Laravel 12 bundles `fruitcake/cors` inside `laravel/framework` — no separate Composer package needed, but the config file must exist for headers to be sent
+- Axios wraps responses in `{ data: <body> }` — when the Laravel API returns a plain array, `response.data` IS the array. The pattern `data.data ?? data` gracefully handles both wrapped `{data: [...]}` and plain array responses
+- `Promise.allSettled` (not `Promise.all`) is essential for independent section loading — if one service is down, the others still render
+- Enrollment dropdowns depend on Student + Course APIs independently — when one is down, only that dropdown shows "unavailable" while the other still populates
+- The gateway app runs on port 8000 (default `php artisan serve`) — separate from the three microservices on 8001-8003
+
+## [2026-03-07] — Add CORS Configuration to All Microservices
+
+### Added
+- `services/student-service/config/cors.php` — CORS config enabling API cross-origin access
+- `services/course-service/config/cors.php` — same CORS config for course service
+- `services/enrollment-service/config/cors.php` — same CORS config for enrollment service
+
+### Changed
+- Nothing modified — three new files only
+
+### Fixed
+- CORS headers were never sent despite `HandleCors` middleware being active by default — the middleware reads from `config('cors')` which resolved to `[]` (empty paths), causing `hasMatchingPath()` to always return `false`
+
+### Learnings & Mistakes
+- In Laravel 12, the `fruitcake/cors` library is bundled INSIDE `laravel/framework` — no need to install `fruitcake/laravel-cors` separately
+- `HandleCors` is in the default global middleware stack (`Illuminate\Foundation\Configuration\Middleware::getGlobalMiddleware()`) — it runs automatically without any `bootstrap/app.php` registration
+- However, **without `config/cors.php`**, the middleware does nothing — `config('cors')` returns `[]`, so `paths` is empty and no request matches
+- Laravel 12 dropped the auto-published `config/cors.php` from `laravel/laravel` skeleton — it must be created manually
+- The config key `'paths' => ['api/*']` is critical — it tells the middleware WHICH routes get CORS headers. Without it, all CORS is silently disabled
+
 ## [2026-03-06] — UI Modernization, README Rewrite, Agent File Cleanup
 
 ### Added
