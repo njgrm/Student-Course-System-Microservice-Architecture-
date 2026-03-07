@@ -1,5 +1,43 @@
 # Changelog
 
+## [2026-03-07] — Real-Time Service Polling + Mermaid Diagrams
+
+### Added
+- **Background service poller** (`pollServices()`) in `resources/js/dashboard.js` — pings all 3 services every 6 seconds via `isServiceUp()`, detects status changes (online↔offline), and only reloads sections that changed. Enrollment dropdowns auto-refresh when student or course availability changes.
+- **Mermaid diagrams** in `DELIVERABLES.md` — 4 renderable diagrams:
+  1. Monolithic architecture (Express single-process with in-memory models)
+  2. Microservices architecture (4 independent Laravel services + gateway)
+  3. Sequence diagram for enrollment creation (HTTP round-trips)
+  4. Failure isolation diagram (one service down, others working, poller recovering)
+
+### Changed
+- `resources/js/dashboard.js` — Initial load now starts `setInterval(pollServices, 6000)` after first data load completes
+- `DELIVERABLES.md` — Replaced ASCII art with Mermaid `graph TD`, `sequenceDiagram`, and styled subgraphs with dark theme colors; updated reflection to mention polling feature
+
+### Fixed
+- **Enrollment section not auto-updating when student/course services come online**: The enrollment dropdowns and dependency warning only checked service availability on page load. Now the background poller detects when student/course services recover and automatically re-runs `loadEnrollmentDropdowns()`, clearing the "Cannot enroll" warning and populating the dropdowns without a browser refresh.
+
+### Learnings & Mistakes
+- A dashboard that monitors multiple microservices **must poll for health changes** — a one-time check on page load is not sufficient for a real-time experience
+- The poller is smart: it pings all services but only triggers DOM updates when status actually changes (no flicker, no unnecessary re-renders)
+- Mermaid `sequenceDiagram` is ideal for visualizing the HTTP round-trips in inter-service communication
+
+## [2026-03-07] — Deliverables, Kill Orphaned Processes, Root Cause Confirmed
+
+### Added
+- `DELIVERABLES.md` — Lab deliverables document containing:
+  - Completed comparison table (Monolithic vs Microservices) across 5 criteria
+  - ASCII architecture diagrams for both monolith and microservices
+  - 1-page reflection on architecture preference with real project learnings
+
+### Fixed
+- **Confirmed root cause of false "Online" bug**: Orphaned `php -S` child processes (PIDs 24388, 8092, 28788) were still listening on ports 8001/8002/8003 even after terminals were closed. On Windows, `php artisan serve` spawns `php -S` as a child process — closing the terminal kills `artisan` but the child `php.exe` survives as an orphaned process. Killed all 3 with `Stop-Process -Force`. Services now correctly show Offline when not running.
+
+### Learnings & Mistakes
+- The "false Online" mystery was NEVER a browser caching bug, Axios interceptor issue, or fetch adapter problem — it was **orphaned OS processes**. The PHP built-in web server child process (`php -S 127.0.0.1:800x`) survives its parent `artisan` process on Windows when the terminal is closed.
+- Always use `Get-NetTCPConnection -LocalPort 8001 -State Listen` or `netstat` to verify a port is truly free before assuming a service is down.
+- The cache-busting interceptor and fetch adapter added in the previous fix are still good defensive measures, but they were solving a problem that didn't exist — the real problem was at the OS process level.
+
 ## [2026-03-07] — Retry Fix, Cache-Proof Detection, Service Redirects
 
 ### Added

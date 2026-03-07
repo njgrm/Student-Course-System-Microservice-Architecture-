@@ -528,7 +528,9 @@ window.deleteEnrollment = async function(id) {
     }
 };
 
-// ========== Initial Load ==========
+// ========== Initial Load + Service Polling ==========
+
+const POLL_INTERVAL = 6000; // check offline services every 6 seconds
 
 document.addEventListener('DOMContentLoaded', () => {
     // Load all three sections in parallel — each fails independently
@@ -537,7 +539,55 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCourses(),
         loadEnrollments(),
     ]).then(() => {
-        // Dropdowns depend on student + course data, load after
         loadEnrollmentDropdowns();
+        // Start background polling for offline services
+        setInterval(pollServices, POLL_INTERVAL);
     });
 });
+
+/**
+ * Lightweight ping: tries GET with short timeout, returns true if alive.
+ */
+async function isServiceUp(url) {
+    try {
+        await axios.get(url, { timeout: 3000 });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Background health-check that runs every POLL_INTERVAL ms.
+ * - If a service was offline and comes back → full reload (shows data)
+ * - If a service was online and goes down  → full reload (shows unavailable)
+ * - If nothing changed → no-op (no flicker)
+ * When student or course availability changes, enrollment dropdowns auto-refresh.
+ */
+async function pollServices() {
+    const prevStudents    = serviceStatus.students;
+    const prevCourses     = serviceStatus.courses;
+    const prevEnrollments = serviceStatus.enrollments;
+
+    // Ping all three in parallel
+    const [studentsUp, coursesUp, enrollmentsUp] = await Promise.all([
+        isServiceUp(STUDENT_API + '/students'),
+        isServiceUp(COURSE_API + '/courses'),
+        isServiceUp(ENROLLMENT_API + '/enrollments'),
+    ]);
+
+    // Only reload sections where status actually changed
+    const reloads = [];
+    if (studentsUp !== prevStudents)       reloads.push(loadStudents());
+    if (coursesUp !== prevCourses)         reloads.push(loadCourses());
+    if (enrollmentsUp !== prevEnrollments) reloads.push(loadEnrollments());
+
+    if (reloads.length === 0) return; // no changes — skip
+
+    await Promise.allSettled(reloads);
+
+    // If student or course availability changed, refresh enrollment dropdowns
+    if (studentsUp !== prevStudents || coursesUp !== prevCourses) {
+        loadEnrollmentDropdowns();
+    }
+}

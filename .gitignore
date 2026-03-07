@@ -41,3 +41,5 @@ services/*/.phpunit.cache
 AGENTS.md
 .cursor/
 .github/copilot-instructions.md
+
+DELIVERABLES.md
