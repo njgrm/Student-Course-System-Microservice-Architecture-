@@ -1,5 +1,25 @@
 # Changelog
 
+## [2026-03-06] — UI Modernization, README Rewrite, Agent File Cleanup
+
+### Added
+- Full README.md rewrite with architecture overview, quick-start guide, `npm run serve:all` instructions, API endpoint docs, tech stack table, and project structure tree
+
+### Changed
+- **All 3 layout templates** (`layouts/app.blade.php`): Dark `bg-slate-800` header with SVG service icons, Inter font via bunny.net, `font-mono` port badges, Tailwind-styled body
+- **student-manager.blade.php**: SAR2-inspired design — white card sections with `border-b-2 border-indigo-500` accent, inline grid form, count badge, SVG Heroicon action buttons, empty state illustration, removed ID column
+- **course-manager.blade.php**: Same SAR2 card pattern with emerald accent, inline 3-col grid form, credits badge pill, SVG icons, empty state with book illustration
+- **enrollment-manager.blade.php**: Amber accent, side-by-side select dropdowns, avatar initial circles for student names, emerald course pills, SVG delete icons, error + success toast notifications
+- `.gitignore`: Added `AGENTS.md`, `.cursor/`, `.github/copilot-instructions.md` to prevent agent tool files from being committed
+
+### Fixed
+- Vite assets rebuilt in all 3 services after template changes
+
+### Learnings & Mistakes
+- Agent tool files (AGENTS.md, .cursor/) were already not tracked in git — `git rm --cached` confirmed they hadn't been committed, so `.gitignore` entries are purely preventive
+- Tailwind CSS 4 (via Vite) processes all Blade files automatically — no need to update `content` paths when adding new Tailwind classes to templates
+- SAR2 design language translates well to Tailwind: `#2c3e50` ≈ `slate-800`, `#3498db` ≈ `indigo-500`/`blue-500`, card sections with colored border-bottom headings
+
 ## [2026-03-06] — Add Laravel Specialist Cursor Rule (Skills Research)
 
 ### Added

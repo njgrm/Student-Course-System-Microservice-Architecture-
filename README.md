@@ -1,39 +1,187 @@
-﻿# Student-Course-System-Microservice-Architecture
+﻿# Student Course System — Microservices Architecture
 
-Laboratory 1: Monolithic vs Microservices Architecture (SAR2)
+> **Laboratory 1:** Monolithic vs Microservices Architecture (SAR2)
 
 ## Overview
 
-This project implements a **Simple Student Course System** in two architectures:
+This project implements a **Simple Student Course System** in two architectures side-by-side:
 
-1. **Monolithic** (Node.js/Express) - in `SAR2/`
-2. **Microservices** (Laravel 12 + Livewire 4 + SQLite) - in `services/`
+| Architecture | Stack | Location |
+|---|---|---|
+| **Monolith** | Node.js · Express 4 · In-memory store | `SAR2/` |
+| **Microservices** | Laravel 12 · Livewire 4 · SQLite | `services/` |
 
-## Microservices
+The microservices version decomposes the monolith into **three independently deployable services** that communicate over HTTP REST APIs:
 
-| Service | Port | Directory |
-|---------|------|-----------|
-| Student Service | 8001 | `services/student-service/` |
-| Course Service | 8002 | `services/course-service/` |
-| Enrollment Service | 8003 | `services/enrollment-service/` |
+| Service | Responsibility | Port | Directory |
+|---|---|---|---|
+| **Student Service** | CRUD student records | `8001` | `services/student-service/` |
+| **Course Service** | CRUD course catalog | `8002` | `services/course-service/` |
+| **Enrollment Service** | Student ↔ Course enrollments | `8003` | `services/enrollment-service/` |
 
-### Running the Services
+---
 
-Terminal 1 - Student Service:
-  cd services/student-service && php artisan serve --port=8001
+## Prerequisites
 
-Terminal 2 - Course Service:
-  cd services/course-service && php artisan serve --port=8002
+- **PHP 8.2+** with `sqlite3`, `mbstring`, `xml` extensions
+- **Composer** (latest)
+- **Node.js 20.19+** (for Vite asset bundling)
+- **npm** (comes with Node.js)
+- **Git**
 
-Terminal 3 - Enrollment Service:
-  cd services/enrollment-service && php artisan serve --port=8003
+---
 
-### Running the Monolith
+## Quick Start
 
-  cd SAR2 && npm install && npm start
-  Runs on http://localhost:3000
+### 1. Clone & install
+
+```bash
+git clone https://github.com/njgrm/Student-Course-System-Microservice-Architecture-.git
+cd Student-Course-System-Microservice-Architecture-
+```
+
+### 2. Install all dependencies (root + 3 services)
+
+```bash
+npm run install:services
+```
+
+This runs `composer install` and `npm install` inside each service.
+
+### 3. Migrate & seed databases
+
+```bash
+npm run fresh:services
+```
+
+This runs `php artisan migrate:fresh --seed` in each service, creating SQLite databases with sample data.
+
+### 4. Build frontend assets
+
+```bash
+npm run build:services
+```
+
+This runs `npm run build` (Vite) in each service to generate the CSS/JS bundles.
+
+### 5. Serve all services (single command)
+
+```bash
+npm run serve:all
+```
+
+This uses **concurrently** to start all three services in one terminal with color-coded output:
+
+- 🟣 **Student Service** → [http://localhost:8001](http://localhost:8001)
+- 🟢 **Course Service** → [http://localhost:8002](http://localhost:8002)
+- 🟡 **Enrollment Service** → [http://localhost:8003](http://localhost:8003)
+
+> **Alternative:** Run `.\serve-all.ps1` to open each service in its own PowerShell window.
+
+---
+
+## Running Individual Services
+
+If you prefer manual control, open three terminals:
+
+```bash
+# Terminal 1
+cd services/student-service && php artisan serve --port=8001
+
+# Terminal 2
+cd services/course-service && php artisan serve --port=8002
+
+# Terminal 3
+cd services/enrollment-service && php artisan serve --port=8003
+```
+
+---
+
+## API Endpoints
+
+Each service exposes a REST API under `/api`:
+
+### Student Service (`:8001`)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/students` | List all students |
+| `POST` | `/api/students` | Create a student |
+| `GET` | `/api/students/{id}` | Get a student |
+| `PUT` | `/api/students/{id}` | Update a student |
+| `DELETE` | `/api/students/{id}` | Delete a student (cascades enrollments) |
+
+### Course Service (`:8002`)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/courses` | List all courses |
+| `POST` | `/api/courses` | Create a course |
+| `GET` | `/api/courses/{id}` | Get a course |
+| `PUT` | `/api/courses/{id}` | Update a course |
+| `DELETE` | `/api/courses/{id}` | Delete a course (cascades enrollments) |
+
+### Enrollment Service (`:8003`)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/enrollments` | List all enrollments (enriched with names) |
+| `POST` | `/api/enrollments` | Create an enrollment |
+| `GET` | `/api/enrollments/{id}` | Get an enrollment |
+| `DELETE` | `/api/enrollments/{id}` | Remove an enrollment |
+| `DELETE` | `/api/enrollments/student/{studentId}` | Remove enrollments by student |
+| `DELETE` | `/api/enrollments/course/{courseId}` | Remove enrollments by course |
+
+---
+
+## Running the Monolith (Reference)
+
+```bash
+cd SAR2
+npm install
+npm start
+```
+
+Opens at [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Running Tests
+
+Each service has its own PHPUnit test suite (34 tests total):
+
+```bash
+# All services
+cd services/student-service && php artisan test
+cd services/course-service && php artisan test
+cd services/enrollment-service && php artisan test
+```
+
+---
 
 ## Tech Stack
 
-- **Microservices:** PHP 8.2+, Laravel 12, Livewire 4, Blade, Tailwind CSS 4, SQLite, Eloquent ORM
-- **Monolith:** Node.js, Express 4, in-memory data store, vanilla HTML/CSS/JS
+| Layer | Technology |
+|---|---|
+| **Backend** | PHP 8.2+, Laravel 12, Eloquent ORM |
+| **Reactive UI** | Livewire 4 (class-based components) |
+| **Templates** | Blade + Tailwind CSS 4 |
+| **Assets** | Vite 7 |
+| **Database** | SQLite (one per service) |
+| **Inter-service** | Laravel HTTP Client (`Http` facade) |
+| **Monolith** | Node.js, Express 4, vanilla JS |
+
+---
+
+## Project Structure
+
+```
+├── services/
+│   ├── student-service/      # Laravel app → :8001
+│   ├── course-service/       # Laravel app → :8002
+│   └── enrollment-service/   # Laravel app → :8003
+├── SAR2/                     # Node.js monolith (reference)
+├── serve-all.ps1             # PowerShell multi-window launcher
+├── package.json              # Root scripts (serve:all, build:services, etc.)
+└── CHANGELOG.md              # Project changelog
+```

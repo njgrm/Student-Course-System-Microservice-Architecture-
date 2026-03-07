@@ -33,3 +33,8 @@ services/*/public/hot
 services/*/storage/*.key
 services/*/storage/pail
 services/*/.phpunit.cache
+
+# Agent / AI tool configs (not needed in repo)
+AGENTS.md
+.cursor/
+.github/copilot-instructions.md
