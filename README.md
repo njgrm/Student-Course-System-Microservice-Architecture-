@@ -1,8 +1,24 @@
-﻿# Student Course System — Microservices Architecture
+# Student Course System — Microservices Architecture
 
-> **Laboratory 1:** Monolithic vs Microservices Architecture (SAR2)
+> **Laboratory 1:** Monolithic vs Microservices Architecture (SAR2)  
+> *ITSAR2 313 – System Integration and Architecture 2*
 
-## Overview
+---
+
+## Members
+| Name | 
+|------|
+| Curio, Josh Nathan |
+| Gilera, Rowena |
+| Gromea, Nehje John |
+| Guanzon, Jurriel |
+| Sildora, Jegrick |
+
+📄 **[View Full Documentation](https://docs.google.com/document/d/1mAOzVsj-WWeIQwoZ4jyvn1LoeE0caDyo/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true)**
+
+---
+
+## 📖 Overview
 
 This project implements a **Simple Student Course System** in two architectures side-by-side:
 
@@ -11,13 +27,13 @@ This project implements a **Simple Student Course System** in two architectures 
 | **Monolith** | Node.js · Express 4 · In-memory store | `SAR2/` |
 | **Microservices** | Laravel 12 · Livewire 4 · SQLite | `services/` |
 
-The microservices version decomposes the monolith into **three independently deployable services** that communicate over HTTP REST APIs:
+The microservices version decomposes the monolith into **three independently deployable services** communicating over HTTP REST APIs:
 
 | Service | Responsibility | Port | Directory |
 |---|---|---|---|
-| **Student Service** | CRUD student records | `8001` | `services/student-service/` |
-| **Course Service** | CRUD course catalog | `8002` | `services/course-service/` |
-| **Enrollment Service** | Student ↔ Course enrollments | `8003` | `services/enrollment-service/` |
+| 🟣 **Student Service** | CRUD student records | `8001` | `services/student-service/` |
+| 🟢 **Course Service** | CRUD course catalog | `8002` | `services/course-service/` |
+| 🟡 **Enrollment Service** | Student ↔ Course enrollments | `8003` | `services/enrollment-service/` |
 
 ---
 
