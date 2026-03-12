@@ -14,11 +14,11 @@
 | Guanzon, Jurriel |
 | Sildora, Jegrick |
 
-📄 **[View Full Documentation](https://docs.google.com/document/d/1mAOzVsj-WWeIQwoZ4jyvn1LoeE0caDyo/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true)**
+**[View Full Documentation](https://docs.google.com/document/d/1mAOzVsj-WWeIQwoZ4jyvn1LoeE0caDyo/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true)**
 
 ---
 
-## 📖 Overview
+## Overview
 
 This project implements a **Simple Student Course System** in two architectures side-by-side:
 
@@ -31,9 +31,9 @@ The microservices version decomposes the monolith into **three independently dep
 
 | Service | Responsibility | Port | Directory |
 |---|---|---|---|
-| 🟣 **Student Service** | CRUD student records | `8001` | `services/student-service/` |
-| 🟢 **Course Service** | CRUD course catalog | `8002` | `services/course-service/` |
-| 🟡 **Enrollment Service** | Student ↔ Course enrollments | `8003` | `services/enrollment-service/` |
+| **Student Service** | CRUD student records | `8001` | `services/student-service/` |
+| **Course Service** | CRUD course catalog | `8002` | `services/course-service/` |
+| **Enrollment Service** | Student ↔ Course enrollments | `8003` | `services/enrollment-service/` |
 
 ---
 
