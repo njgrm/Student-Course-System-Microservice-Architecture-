@@ -74,7 +74,7 @@ function showToast(message, type = 'success', title = null) {
     const color = isSuccess ? '#10b981' : '#ef4444';
 
     const toast = document.createElement('div');
-    toast.className = 'flex items-start gap-3 bg-white border border-gray-200 shadow-lg rounded-lg px-4 py-3 min-w-[320px] max-w-sm relative overflow-hidden toast-enter';
+    toast.className = 'flex items-start gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg px-4 py-3 min-w-[320px] max-w-sm relative overflow-hidden toast-enter';
     toast.style.borderLeftWidth = '4px';
     toast.style.borderLeftColor = color;
 
@@ -87,10 +87,10 @@ function showToast(message, type = 'success', title = null) {
     toast.innerHTML = `
         ${iconSvg}
         <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-gray-900">${esc(titleText)}</p>
-            <p class="text-sm text-gray-600 mt-0.5">${esc(message)}</p>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">${esc(titleText)}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5">${esc(message)}</p>
         </div>
-        <button class="toast-dismiss text-gray-400 hover:text-gray-600 shrink-0 mt-0.5" aria-label="Dismiss">
+        <button class="toast-dismiss text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 shrink-0 mt-0.5" aria-label="Dismiss">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
         </button>
         <div class="toast-progress absolute bottom-0 left-0 h-0.5" style="background:${color};width:100%;"></div>
@@ -132,7 +132,7 @@ function setOffline(badge) {
 function showUnavailable(tableArea, formBox, retryFn) {
     formBox.classList.add('hidden');
     tableArea.innerHTML = `
-        <div class="bg-amber-50 border border-amber-200 text-amber-800 p-6 rounded-lg text-center">
+        <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-300 p-6 rounded-lg text-center">
             <svg class="w-8 h-8 mx-auto mb-2 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
             <p class="font-medium mb-3">Service unavailable</p>
             <button class="retry-btn inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">
@@ -158,9 +158,9 @@ function showSkeleton(tbody, cols = 4) {
     const rows = Array.from({ length: 3 }, () => {
         const tds = Array.from({ length: cols }, (_, i) => {
             const w = i === 0 ? 'w-32' : i === cols - 1 ? 'w-16 ml-auto' : 'w-24';
-            return `<td class="px-4 py-3.5"><div class="h-3.5 ${w} bg-gray-200 rounded animate-pulse"></div></td>`;
+            return `<td class="px-4 py-3.5"><div class="h-3.5 ${w} bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div></td>`;
         }).join('');
-        return `<tr class="border-b border-gray-50">${tds}</tr>`;
+        return `<tr class="border-b border-gray-50 dark:border-gray-700">${tds}</tr>`;
     }).join('');
     tbody.innerHTML = rows;
 }
@@ -208,18 +208,18 @@ async function loadStudents() {
         studentCount.textContent = count;
 
         if (students.length === 0) {
-            studentsTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">No students yet.</td></tr>';
+            studentsTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500 italic">No students yet.</td></tr>';
             return;
         }
 
         studentsTbody.innerHTML = students.map(s => `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="px-4 py-3 font-medium text-gray-900">${esc(s.full_name)}</td>
-                <td class="px-4 py-3 text-gray-600">${esc(s.email)}</td>
-                <td class="px-4 py-3 text-gray-600">${s.age}</td>
+            <tr class="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">${esc(s.full_name)}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">${esc(s.email)}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">${s.age}</td>
                 <td class="px-4 py-3 text-right">
                     <button onclick="window.deleteStudent(${s.id})"
-                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors">
+                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-sm font-medium transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                         Delete
                     </button>
@@ -288,20 +288,20 @@ async function loadCourses() {
         courseCount.textContent = count;
 
         if (courses.length === 0) {
-            coursesTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">No courses yet.</td></tr>';
+            coursesTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500 italic">No courses yet.</td></tr>';
             return;
         }
 
         coursesTbody.innerHTML = courses.map(c => `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="px-4 py-3 font-medium text-gray-900">${esc(c.name)}</td>
-                <td class="px-4 py-3 text-gray-600 max-w-xs truncate">${esc(c.description)}</td>
-                <td class="px-4 py-3 text-gray-600">
-                    <span class="inline-flex items-center bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded">${c.credits} cr</span>
+            <tr class="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">${esc(c.name)}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-xs truncate">${esc(c.description)}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                    <span class="inline-flex items-center bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold px-2 py-0.5 rounded">${c.credits} cr</span>
                 </td>
                 <td class="px-4 py-3 text-right">
                     <button onclick="window.deleteCourse(${c.id})"
-                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors">
+                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-sm font-medium transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                         Delete
                     </button>
@@ -370,29 +370,29 @@ async function loadEnrollments() {
         enrollmentCount.textContent = count;
 
         if (enrollments.length === 0) {
-            enrollmentsTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 italic">No enrollments yet.</td></tr>';
+            enrollmentsTbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500 italic">No enrollments yet.</td></tr>';
             return;
         }
 
         enrollmentsTbody.innerHTML = enrollments.map(e => `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="px-4 py-3 font-medium text-gray-900">
+            <tr class="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold">
+                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 text-xs font-bold">
                             ${esc(e.student_name?.charAt(0)?.toUpperCase() || '?')}
                         </span>
                         ${esc(e.student_name || 'Unknown')}
                     </div>
                 </td>
-                <td class="px-4 py-3 text-gray-600">
-                    <span class="inline-flex items-center bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded">
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
+                    <span class="inline-flex items-center bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold px-2 py-0.5 rounded">
                         ${esc(e.course_name || 'Unknown')}
                     </span>
                 </td>
-                <td class="px-4 py-3 text-gray-500">${new Date(e.enrolled_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">${new Date(e.enrolled_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                 <td class="px-4 py-3 text-right">
                     <button onclick="window.deleteEnrollment(${e.id})"
-                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors">
+                        class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-sm font-medium transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
                         Remove
                     </button>

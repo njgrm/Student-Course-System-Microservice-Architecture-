@@ -1,5 +1,24 @@
 # Changelog
 
+## [2025-07-22] — Dark Mode Toggle + Two-Column Layout
+
+### Added
+- **Dark mode toggle** button in gateway header (sun/moon icons, Alpine.js store + localStorage persistence)
+- **`@custom-variant dark`** in `resources/css/app.css` enabling class-based dark mode for Tailwind v4
+- Alpine.js `darkMode` store in `resources/js/app.js` — reads from localStorage before first paint to prevent flash
+- `dark:` utility classes across all static (Blade) and dynamic (JS-generated) HTML elements
+
+### Changed
+- `resources/views/dashboard.blade.php` — Students + Courses now sit **side-by-side in a 2-column grid** (`lg:grid-cols-2`), Enrollments remains full-width below; container widened from `max-w-6xl` to `max-w-7xl`; form inputs stack vertically (`grid-cols-1`) within each card for better fit; comprehensive `dark:` classes on header, sections, forms, inputs, tables, borders, modal
+- `resources/js/dashboard.js` — `dark:` classes added to toast, unavailable card, skeleton rows, all table rows (students, courses, enrollments), and badges
+- `resources/js/app.js` — Added localStorage dark mode restore + Alpine.js `darkMode` store before `Alpine.start()`
+- `resources/css/app.css` — Added `@custom-variant dark`, toast slide-in animation, modal panel transitions
+
+### Learnings & Mistakes
+- Tailwind CSS v4 uses `@custom-variant dark (&:where(.dark, .dark *))` for class-based dark mode — no `tailwind.config.js` needed
+- Form grid changed from `sm:grid-cols-3` to `grid-cols-1` since the 2-col layout makes each card narrower — 3-col forms looked cramped
+- The `<html>` tag needs Alpine's `x-data` + `x-bind:class` for reactive dark toggling
+
 ## [2026-03-07] — UI/UX Polish: Custom Modals, Rich Toasts, Skeleton Loading, Status Dots, Retry
 
 ### Added
