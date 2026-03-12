@@ -1,0 +1,8 @@
+﻿TEST: Create student with negative age
+METHOD: POST /api/students
+BODY: {"full_name":"Negative Age","email":"neg@test.com","age":-5}
+EXPECTED: 400 Validation Error
+
+RESPONSE:
+{"error":"VALIDATION_ERROR","message":"The age field must be at least 1.","details":{"age":["The age field must be at least 1."]}}
+HTTP_STATUS: 400

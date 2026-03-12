@@ -1,0 +1,8 @@
+﻿TEST: Create a new course
+METHOD: POST /api/courses
+BODY: {"name":"Advanced AI","description":"Deep learning and neural networks","credits":4}
+EXPECTED: 201 Created
+
+RESPONSE:
+{"id":5,"message":"Course created successfully."}
+HTTP_STATUS: 201

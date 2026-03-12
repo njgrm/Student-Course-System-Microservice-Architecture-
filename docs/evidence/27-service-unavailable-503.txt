@@ -1,0 +1,9 @@
+﻿TEST: Enroll when Student Service is completely down (503)
+METHOD: POST /api/enrollments
+BODY: {"student_id":1,"course_id":2}
+PRECONDITION: Student Service (port 8001) stopped
+EXPECTED: 503 Service Unavailable
+
+RESPONSE:
+{"error":"SERVICE_UNAVAILABLE","message":"Student Service is unavailable."}
+HTTP_STATUS: 503

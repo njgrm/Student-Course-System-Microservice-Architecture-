@@ -1,0 +1,7 @@
+﻿TEST: Get student with id=1
+METHOD: GET /api/students/1
+EXPECTED: 200 OK
+
+RESPONSE:
+{"id":1,"full_name":"Alice Johnson","email":"alice@example.com","age":20,"created_at":"2026-03-12T03:00:05.000000Z","updated_at":"2026-03-12T03:00:05.000000Z"}
+HTTP_STATUS: 200

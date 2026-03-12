@@ -1,0 +1,23 @@
+﻿TEST: Delete a student and verify their enrollments are cascade-deleted
+STEPS:
+  1. POST /api/students (create Cascade Test)
+  2. POST /api/enrollments (enroll student 2 in course 2)
+  3. DELETE /api/students/2 (delete the student)
+  4. GET /api/enrollments (verify enrollment was removed)
+EXPECTED: Enrollments for student 2 no longer appear
+
+STEP 1 - Create Student:
+{"id":6,"message":"Student created successfully."}
+HTTP_STATUS: 201
+
+STEP 2 - Create Enrollment:
+{"error":"DUPLICATE_ENROLLMENT","message":"Student is already enrolled in this course."}
+HTTP_STATUS: 409
+
+STEP 3 - Delete Student:
+{"message":"Student deleted successfully."}
+HTTP_STATUS: 200
+
+STEP 4 - List Enrollments After Delete:
+[{"id":1,"student_id":1,"course_id":1,"enrolled_at":"2026-03-12T03:00:06.000000Z","created_at":"2026-03-12T03:00:06.000000Z","updated_at":"2026-03-12T03:00:06.000000Z","student_name":"Alice Updated","course_name":"Intro to CS Updated"},{"id":2,"student_id":1,"course_id":3,"enrolled_at":"2026-03-12T03:00:06.000000Z","created_at":"2026-03-12T03:00:06.000000Z","updated_at":"2026-03-12T03:00:06.000000Z","student_name":"Alice Updated","course_name":"Web Development"},{"id":4,"student_id":3,"course_id":1,"enrolled_at":"2026-03-12T03:00:06.000000Z","created_at":"2026-03-12T03:00:06.000000Z","updated_at":"2026-03-12T03:00:06.000000Z","student_name":"Charlie Brown","course_name":"Intro to CS Updated"},{"id":5,"student_id":4,"course_id":4,"enrolled_at":"2026-03-12T03:00:06.000000Z","created_at":"2026-03-12T03:00:06.000000Z","updated_at":"2026-03-12T03:00:06.000000Z","student_name":"Diana Prince","course_name":"Database Systems"}]
+HTTP_STATUS: 200

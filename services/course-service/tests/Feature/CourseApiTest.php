@@ -40,8 +40,9 @@ class CourseApiTest extends TestCase
     {
         $response = $this->postJson('/api/courses', []);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'description', 'credits']);
+        $response->assertStatus(400)
+            ->assertJsonFragment(['error' => 'VALIDATION_ERROR'])
+            ->assertJsonStructure(['error', 'message', 'details']);
     }
 
     public function test_can_show_a_course(): void
@@ -89,10 +90,10 @@ class CourseApiTest extends TestCase
         $this->assertDatabaseMissing('courses', ['id' => $course->id]);
     }
 
-    public function test_homepage_returns_200(): void
+    public function test_homepage_redirects_to_gateway(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertStatus(302);
     }
 }

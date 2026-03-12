@@ -60,7 +60,7 @@ class EnrollmentApiTest extends TestCase
         ]);
 
         $response->assertStatus(409)
-            ->assertJsonFragment(['error' => 'Student is already enrolled in this course.']);
+            ->assertJsonFragment(['error' => 'DUPLICATE_ENROLLMENT']);
     }
 
     public function test_cannot_enroll_nonexistent_student(): void
@@ -75,7 +75,7 @@ class EnrollmentApiTest extends TestCase
         ]);
 
         $response->assertStatus(404)
-            ->assertJsonFragment(['error' => 'Student not found in Student Service.']);
+            ->assertJsonFragment(['error' => 'NOT_FOUND']);
     }
 
     public function test_cannot_enroll_nonexistent_course(): void
@@ -91,7 +91,7 @@ class EnrollmentApiTest extends TestCase
         ]);
 
         $response->assertStatus(404)
-            ->assertJsonFragment(['error' => 'Course not found in Course Service.']);
+            ->assertJsonFragment(['error' => 'NOT_FOUND']);
     }
 
     public function test_can_show_an_enrollment(): void
@@ -153,11 +153,12 @@ class EnrollmentApiTest extends TestCase
     {
         $response = $this->postJson('/api/enrollments', []);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['student_id', 'course_id']);
+        $response->assertStatus(400)
+            ->assertJsonFragment(['error' => 'VALIDATION_ERROR'])
+            ->assertJsonStructure(['error', 'message', 'details']);
     }
 
-    public function test_homepage_returns_200(): void
+    public function test_homepage_redirects_to_gateway(): void
     {
         Http::fake([
             'localhost:8001/api/students' => Http::response([], 200),
@@ -166,6 +167,6 @@ class EnrollmentApiTest extends TestCase
 
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertStatus(302);
     }
 }

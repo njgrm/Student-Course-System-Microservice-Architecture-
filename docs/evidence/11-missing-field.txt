@@ -1,0 +1,8 @@
+﻿TEST: Create student without full_name (required field missing)
+METHOD: POST /api/students
+BODY: {"email":"no-name@test.com","age":20}
+EXPECTED: 400 Validation Error
+
+RESPONSE:
+{"error":"VALIDATION_ERROR","message":"The full name field is required.","details":{"full_name":["The full name field is required."]}}
+HTTP_STATUS: 400

@@ -1,0 +1,8 @@
+﻿TEST: Update student id=1
+METHOD: PUT /api/students/1
+BODY: {"full_name":"Alice Updated","email":"alice.updated@university.edu","age":23}
+EXPECTED: 200 OK
+
+RESPONSE:
+{"id":1,"message":"Student updated successfully."}
+HTTP_STATUS: 200

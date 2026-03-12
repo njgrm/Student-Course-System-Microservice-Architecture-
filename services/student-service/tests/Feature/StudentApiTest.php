@@ -40,8 +40,9 @@ class StudentApiTest extends TestCase
     {
         $response = $this->postJson('/api/students', []);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['full_name', 'email', 'age']);
+        $response->assertStatus(400)
+            ->assertJsonFragment(['error' => 'VALIDATION_ERROR'])
+            ->assertJsonStructure(['error', 'message', 'details']);
     }
 
     public function test_cannot_create_student_with_duplicate_email(): void
@@ -54,8 +55,8 @@ class StudentApiTest extends TestCase
             'age' => 25,
         ]);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
+        $response->assertStatus(400)
+            ->assertJsonFragment(['error' => 'VALIDATION_ERROR']);
     }
 
     public function test_can_show_a_student(): void
@@ -103,10 +104,10 @@ class StudentApiTest extends TestCase
         $this->assertDatabaseMissing('students', ['id' => $student->id]);
     }
 
-    public function test_homepage_returns_200(): void
+    public function test_homepage_redirects_to_gateway(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertStatus(302);
     }
 }

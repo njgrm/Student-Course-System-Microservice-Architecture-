@@ -1,0 +1,8 @@
+﻿TEST: Create a new student
+METHOD: POST /api/students
+BODY: {"full_name":"Alice Johnson","email":"alice.new@university.edu","age":22}
+EXPECTED: 201 Created
+
+RESPONSE:
+{"id":5,"message":"Student created successfully."}
+HTTP_STATUS: 201

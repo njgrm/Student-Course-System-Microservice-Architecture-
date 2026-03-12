@@ -1,0 +1,8 @@
+﻿TEST: Enroll a student in a course that does not exist in Course Service
+METHOD: POST /api/enrollments
+BODY: {"student_id":1,"course_id":9999}
+EXPECTED: 404 Not Found
+
+RESPONSE:
+{"error":"NOT_FOUND","message":"Course not found in Course Service."}
+HTTP_STATUS: 404

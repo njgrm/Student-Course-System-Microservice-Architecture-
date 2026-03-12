@@ -1,0 +1,7 @@
+﻿TEST: Delete enrollment id=1
+METHOD: DELETE /api/enrollments/1
+EXPECTED: 200 OK
+
+RESPONSE:
+{"message":"Enrollment deleted successfully."}
+HTTP_STATUS: 200

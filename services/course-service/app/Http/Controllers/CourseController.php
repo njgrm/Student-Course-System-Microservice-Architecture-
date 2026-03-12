@@ -25,7 +25,10 @@ class CourseController extends Controller
     {
         $course = Course::create($request->validated());
 
-        return response()->json($course, 201);
+        return response()->json([
+            'id'      => $course->id,
+            'message' => 'Course created successfully.',
+        ], 201);
     }
 
     /**
@@ -43,7 +46,10 @@ class CourseController extends Controller
     {
         $course->update($request->validated());
 
-        return response()->json($course);
+        return response()->json([
+            'id'      => $course->id,
+            'message' => 'Course updated successfully.',
+        ]);
     }
 
     /**

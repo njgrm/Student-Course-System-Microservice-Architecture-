@@ -1,0 +1,9 @@
+TEST: Enroll when Student Service responds too slowly (504 Gateway Timeout)
+METHOD: POST /api/enrollments
+BODY: {"student_id":1,"course_id":2}
+PRECONDITION: Student Service show() has 10s sleep; Enrollment Service HTTP_TIMEOUT = 5s
+EXPECTED: 504 Gateway Timeout
+
+RESPONSE:
+{"error":"GATEWAY_TIMEOUT","message":"Student Service timed out."}
+HTTP_STATUS: 504

@@ -1,0 +1,7 @@
+﻿TEST: Delete student id=3
+METHOD: DELETE /api/students/3
+EXPECTED: 200 OK
+
+RESPONSE:
+{"message":"Student deleted successfully."}
+HTTP_STATUS: 200

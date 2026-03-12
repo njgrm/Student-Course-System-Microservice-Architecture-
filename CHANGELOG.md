@@ -1,5 +1,58 @@
 # Changelog
 
+## [2026-03-12] — Lab 2: Clean API Responses + Complete Curl Evidence
+
+### Added
+- **29 evidence files** in `docs/evidence/` — full curl output for every edge case:
+  - Happy path: create (201), list (200), get (200), update (200), delete (200)
+  - Validation: missing field, invalid email, duplicate email, negative age, empty body, zero credits (all 400)
+  - Not found: student, course, enrollment, cross-service student/course (all 404)
+  - Duplicate enrollment (409), cascade delete verification
+  - Service unavailable: student-down (503), course-down (503)
+  - Gateway timeout (504) via temporary 10s sleep + 5s HTTP timeout
+- **`docs/evidence/README.md`** — Index of all evidence files with test descriptions
+
+### Changed
+- `services/student-service/app/Http/Controllers/StudentController.php` — `store()` returns `{"id": N, "message": "Student created successfully."}` (201); `update()` returns `{"id": N, "message": "Student updated successfully."}` (200); previously returned full Eloquent model dump
+- `services/course-service/app/Http/Controllers/CourseController.php` — Same clean `{id, message}` format for `store()` and `update()` responses
+- `services/enrollment-service/app/Http/Controllers/EnrollmentController.php` — `store()` returns `{"id": N, "message": "Enrollment created successfully."}` (201); previously returned enriched enrollment object
+
+### Learnings & Mistakes
+- Returning full Eloquent model dumps from `store()`/`update()` exposes internal timestamps and structure to API consumers. Clean `{id, message}` responses are more predictable and match the lab specification.
+- PowerShell aliases `curl` to `Invoke-WebRequest` — must use `curl.exe` explicitly for real curl behavior. JSON body escaping in PowerShell is extremely fragile; writing to a temp file with `Out-File -Encoding ascii -NoNewline` then using `curl.exe -d @file` is the most reliable approach.
+- For 504 evidence: temporarily added `sleep(10)` to `StudentController::show()`, let enrollment service's 5s timeout trigger the 504, then immediately reverted. The existing `/api/students/slow-test` route was not used by the enrollment service's internal HTTP calls (it calls `/api/students/{id}`, not `/api/students/slow-test`).
+- Evidence file 03 (create enrollment) initially captured a 409 duplicate because the seeded DB already had that enrollment — re-ran with a unique student/course pair to get the correct 201.
+
+## [2026-03-10] — Lab 2: Edge Case Error Handling & Curl Testing
+
+### Added
+- **Standardized exception handlers** in all 3 services' `bootstrap/app.php`:
+  - `ValidationException` → 400 `{error: "VALIDATION_ERROR", message, details}`
+  - `ModelNotFoundException` → 404 `{error: "NOT_FOUND", message: "<Model> not found."}`
+  - `NotFoundHttpException` → 404 `{error: "NOT_FOUND", message: "The requested resource was not found."}`
+- **Timeout handling** in `EnrollmentController` — all inter-service HTTP calls now use `Http::timeout(5)` with `ConnectionException` catch that distinguishes 503 (connection refused) from 504 (timed out)
+- **Duplicate enrollment format** — 409 response now uses `{error: "DUPLICATE_ENROLLMENT", message}` instead of plain `{error: "message"}`
+- **Slow-test route** — `GET /api/students/slow-test` with `sleep(10)` for timeout evidence
+- **`tests/curl-tests.md`** — Complete curl command listing for all edge cases (happy path, 400, 404, 409, 503, 504)
+- **`docs/report.md`** — Detailed report explaining each edge case, implementation approach, and why each matters in distributed systems
+- **`docs/evidence/`** — Directory for saved curl output text files
+- **Lab 2 section in `README.md`** — Error codes table, testing instructions, file structure
+
+### Changed
+- `services/student-service/bootstrap/app.php` — Added 3 exception renderers
+- `services/course-service/bootstrap/app.php` — Added 3 exception renderers
+- `services/enrollment-service/bootstrap/app.php` — Added 3 exception renderers
+- `services/enrollment-service/app/Http/Controllers/EnrollmentController.php` — Added `Http::timeout(5)`, `ConnectionException` import, 503/504 distinction, standardized all error response formats
+- `services/student-service/routes/api.php` — Added slow-test route before apiResource
+- `README.md` — Added Lab 2 section with error codes, curl testing instructions, updated project structure
+- `DELIVERABLES.md` — Expanded microservices Mermaid diagram to show internal Routes/Controllers/Models/DB per service
+
+### Learnings & Mistakes
+- Laravel's default validation failure returns **422 Unprocessable Entity**, not 400. The Lab 2 rubric requires 400, so we had to override via the exception handler.
+- The `Accept: application/json` header is **critical** in curl — without it, Laravel returns HTML error pages and the exception handler's `$request->expectsJson()` check fails.
+- `ConnectionException` in Laravel covers both "connection refused" and "timed out" — the only way to distinguish them is by inspecting the exception message string.
+- The slow-test route must be defined **before** `Route::apiResource()` in `api.php`, otherwise Laravel interprets `slow-test` as a `{student}` ID parameter and route model binding fails.
+
 ## [2026-03-07] — Real-Time Service Polling + Mermaid Diagrams
 
 ### Added

@@ -1,0 +1,8 @@
+﻿TEST: Create student with empty JSON body
+METHOD: POST /api/students
+BODY: {}
+EXPECTED: 400 Validation Error
+
+RESPONSE:
+{"error":"VALIDATION_ERROR","message":"The full name field is required. (and 2 more errors)","details":{"full_name":["The full name field is required."],"email":["The email field is required."],"age":["The age field is required."]}}
+HTTP_STATUS: 400

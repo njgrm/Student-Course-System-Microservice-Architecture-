@@ -1,0 +1,8 @@
+﻿TEST: Enroll same student in same course again (duplicate)
+METHOD: POST /api/enrollments
+BODY: {"student_id":1,"course_id":1}
+EXPECTED: 409 Duplicate Enrollment
+
+RESPONSE:
+{"error":"DUPLICATE_ENROLLMENT","message":"Student is already enrolled in this course."}
+HTTP_STATUS: 409

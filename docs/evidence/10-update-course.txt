@@ -1,0 +1,8 @@
+﻿TEST: Update course id=1
+METHOD: PUT /api/courses/1
+BODY: {"name":"Intro to CS Updated","description":"Updated description","credits":4}
+EXPECTED: 200 OK
+
+RESPONSE:
+{"id":1,"message":"Course updated successfully."}
+HTTP_STATUS: 200

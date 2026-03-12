@@ -23,7 +23,7 @@
 
     {{-- Page Header --}}
     <header class="bg-zinc-900/80 border-b border-zinc-800/50 backdrop-blur-sm sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-6 py-4">
+        <div class="max-w-8xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-teal-400">
@@ -40,135 +40,136 @@
         <div class="h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent"></div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-6 py-6 space-y-5">
-
-        {{-- ==================== STUDENTS SECTION ==================== --}}
-        <section id="students-section" class="bg-zinc-900/60 border border-zinc-800/50 rounded-xl overflow-hidden glow-violet">
-            <div class="px-5 py-3 flex items-center justify-between border-b border-zinc-800/50">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-1 h-4 rounded-full bg-violet-500"></div>
-                    <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
-                    <h2 class="text-sm font-semibold text-zinc-200 tracking-wide">Students</h2>
+    <main class="mx-auto px-6 py-6 space-y-5">
+        <div style="display: grid; grid-template-columns: 2fr 2fr; gap: 1.25rem;">
+            {{-- ==================== STUDENTS SECTION ==================== --}}
+            <section id="students-section" class="bg-zinc-900/60 border col-span-1 border-zinc-800/50 rounded-xl overflow-hidden glow-violet">
+                <div class="px-5 py-3 flex items-center justify-between border-b border-zinc-800/50">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-1 h-4 rounded-full bg-violet-500"></div>
+                        <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
+                        <h2 class="text-sm font-semibold text-zinc-200 tracking-wide">Students</h2>
+                    </div>
+                    <span id="student-status" class="text-[10px] font-medium text-zinc-500 bg-zinc-800/80 px-2 py-0.5 rounded-full">Checking…</span>
                 </div>
-                <span id="student-status" class="text-[10px] font-medium text-zinc-500 bg-zinc-800/80 px-2 py-0.5 rounded-full">Checking…</span>
-            </div>
 
-            <div class="p-5">
-                <div id="student-form-container">
-                    <h3 class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2.5">Add Student</h3>
-                    <form id="student-form" class="mb-5">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                            <div>
-                                <label for="student-name" class="block text-[11px] font-medium text-zinc-500 mb-1">Full Name</label>
-                                <input type="text" id="student-name" placeholder="e.g. Juan Dela Cruz" required
-                                    class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 focus:outline-none transition">
+                <div class="p-5">
+                    <div id="student-form-container">
+                        <h3 class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2.5">Add Student</h3>
+                        <form id="student-form" class="mb-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                                <div>
+                                    <label for="student-name" class="block text-[11px] font-medium text-zinc-500 mb-1">Full Name</label>
+                                    <input type="text" id="student-name" placeholder="e.g. Juan Dela Cruz" required
+                                        class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 focus:outline-none transition">
+                                </div>
+                                <div>
+                                    <label for="student-email" class="block text-[11px] font-medium text-zinc-500 mb-1">Email</label>
+                                    <input type="email" id="student-email" placeholder="e.g. juan@email.com" required
+                                        class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 focus:outline-none transition">
+                                </div>
+                                <div>
+                                    <label for="student-age" class="block text-[11px] font-medium text-zinc-500 mb-1">Age</label>
+                                    <input type="number" id="student-age" placeholder="e.g. 20" min="1" required
+                                        class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 focus:outline-none transition">
+                                </div>
                             </div>
-                            <div>
-                                <label for="student-email" class="block text-[11px] font-medium text-zinc-500 mb-1">Email</label>
-                                <input type="email" id="student-email" placeholder="e.g. juan@email.com" required
-                                    class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 focus:outline-none transition">
-                            </div>
-                            <div>
-                                <label for="student-age" class="block text-[11px] font-medium text-zinc-500 mb-1">Age</label>
-                                <input type="number" id="student-age" placeholder="e.g. 20" min="1" required
-                                    class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 focus:outline-none transition">
-                            </div>
+                            <button type="submit"
+                                class="inline-flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                Add Student
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="border-t border-zinc-800/50 pt-4">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <h3 class="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">All Students</h3>
+                            <span id="student-count" class="text-[11px] font-mono font-bold text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded">0</span>
                         </div>
-                        <button type="submit"
-                            class="inline-flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                            Add Student
-                        </button>
-                    </form>
-                </div>
-
-                <div class="border-t border-zinc-800/50 pt-4">
-                    <div class="flex items-center justify-between mb-2.5">
-                        <h3 class="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">All Students</h3>
-                        <span id="student-count" class="text-[11px] font-mono font-bold text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded">0</span>
-                    </div>
-                    <div id="student-table-area">
-                        <table id="students-table" class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-zinc-800/50">
-                                    <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Name</th>
-                                    <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Email</th>
-                                    <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Age</th>
-                                    <th class="px-3 py-2 text-right text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="students-tbody">
-                                <tr><td colspan="4" class="px-3 py-6 text-center text-zinc-600 italic text-sm">Loading…</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- ==================== COURSES SECTION ==================== --}}
-        <section id="courses-section" class="bg-zinc-900/60 border border-zinc-800/50 rounded-xl overflow-hidden glow-teal">
-            <div class="px-5 py-3 flex items-center justify-between border-b border-zinc-800/50">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-1 h-4 rounded-full bg-teal-500"></div>
-                    <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>
-                    <h2 class="text-sm font-semibold text-zinc-200 tracking-wide">Courses</h2>
-                </div>
-                <span id="course-status" class="text-[10px] font-medium text-zinc-500 bg-zinc-800/80 px-2 py-0.5 rounded-full">Checking…</span>
-            </div>
-
-            <div class="p-5">
-                <div id="course-form-container">
-                    <h3 class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2.5">Add Course</h3>
-                    <form id="course-form" class="mb-5">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                            <div>
-                                <label for="course-name" class="block text-[11px] font-medium text-zinc-500 mb-1">Course Name</label>
-                                <input type="text" id="course-name" placeholder="e.g. Web Development" required
-                                    class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 focus:outline-none transition">
-                            </div>
-                            <div>
-                                <label for="course-desc" class="block text-[11px] font-medium text-zinc-500 mb-1">Description</label>
-                                <input type="text" id="course-desc" placeholder="e.g. HTML, CSS, JS" required
-                                    class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 focus:outline-none transition">
-                            </div>
-                            <div>
-                                <label for="course-credits" class="block text-[11px] font-medium text-zinc-500 mb-1">Credits</label>
-                                <input type="number" id="course-credits" placeholder="e.g. 3" min="1" required
-                                    class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 focus:outline-none transition">
-                            </div>
+                        <div id="student-table-area">
+                            <table id="students-table" class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-zinc-800/50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Email</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Age</th>
+                                        <th class="px-3 py-2 text-right text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="students-tbody">
+                                    <tr><td colspan="4" class="px-3 py-6 text-center text-zinc-600 italic text-sm">Loading…</td></tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <button type="submit"
-                            class="inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                            Add Course
-                        </button>
-                    </form>
+                    </div>
+                </div>
+            </section>
+
+            {{-- ==================== COURSES SECTION ==================== --}}
+            <section id="courses-section" class="bg-zinc-900/60 border col-span-3 border-zinc-800/50 rounded-xl overflow-hidden glow-teal">
+                <div class="px-5 py-3 flex items-center justify-between border-b border-zinc-800/50">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-1 h-4 rounded-full bg-teal-500"></div>
+                        <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>
+                        <h2 class="text-sm font-semibold text-zinc-200 tracking-wide">Courses</h2>
+                    </div>
+                    <span id="course-status" class="text-[10px] font-medium text-zinc-500 bg-zinc-800/80 px-2 py-0.5 rounded-full">Checking…</span>
                 </div>
 
-                <div class="border-t border-zinc-800/50 pt-4">
-                    <div class="flex items-center justify-between mb-2.5">
-                        <h3 class="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">All Courses</h3>
-                        <span id="course-count" class="text-[11px] font-mono font-bold text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded">0</span>
+                <div class="p-5">
+                    <div id="course-form-container">
+                        <h3 class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-2.5">Add Course</h3>
+                        <form id="course-form" class="mb-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                                <div>
+                                    <label for="course-name" class="block text-[11px] font-medium text-zinc-500 mb-1">Course Name</label>
+                                    <input type="text" id="course-name" placeholder="e.g. Web Development" required
+                                        class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 focus:outline-none transition">
+                                </div>
+                                <div>
+                                    <label for="course-desc" class="block text-[11px] font-medium text-zinc-500 mb-1">Description</label>
+                                    <input type="text" id="course-desc" placeholder="e.g. HTML, CSS, JS" required
+                                        class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 focus:outline-none transition">
+                                </div>
+                                <div>
+                                    <label for="course-credits" class="block text-[11px] font-medium text-zinc-500 mb-1">Credits</label>
+                                    <input type="number" id="course-credits" placeholder="e.g. 3" min="1" required
+                                        class="w-full rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-sm text-zinc-100 placeholder:text-zinc-600 px-3 py-2 focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 focus:outline-none transition">
+                                </div>
+                            </div>
+                            <button type="submit"
+                                class="inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                Add Course
+                            </button>
+                        </form>
                     </div>
-                    <div id="course-table-area">
-                        <table id="courses-table" class="w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-zinc-800/50">
-                                    <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Name</th>
-                                    <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Description</th>
-                                    <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Credits</th>
-                                    <th class="px-3 py-2 text-right text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="courses-tbody">
-                                <tr><td colspan="4" class="px-3 py-6 text-center text-zinc-600 italic text-sm">Loading…</td></tr>
-                            </tbody>
-                        </table>
+
+                    <div class="border-t border-zinc-800/50 pt-4">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <h3 class="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">All Courses</h3>
+                            <span id="course-count" class="text-[11px] font-mono font-bold text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded">0</span>
+                        </div>
+                        <div id="course-table-area">
+                            <table id="courses-table" class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-zinc-800/50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Description</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Credits</th>
+                                        <th class="px-3 py-2 text-right text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="courses-tbody">
+                                    <tr><td colspan="4" class="px-3 py-6 text-center text-zinc-600 italic text-sm">Loading…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
 
         {{-- ==================== ENROLLMENTS SECTION ==================== --}}
         <section id="enrollments-section" class="bg-zinc-900/60 border border-zinc-800/50 rounded-xl overflow-hidden glow-amber">

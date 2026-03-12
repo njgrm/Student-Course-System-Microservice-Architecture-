@@ -1,0 +1,8 @@
+﻿TEST: Enroll student 2 in course 4
+METHOD: POST /api/enrollments
+BODY: {"student_id":2,"course_id":4}
+EXPECTED: 201 Created
+
+RESPONSE:
+{"id":6,"message":"Enrollment created successfully."}
+HTTP_STATUS: 201

@@ -1,0 +1,8 @@
+﻿TEST: Create student with an email that already exists
+METHOD: POST /api/students
+BODY: {"full_name":"Duplicate","email":"alice.new@university.edu","age":20}
+EXPECTED: 400 Validation Error (email unique)
+
+RESPONSE:
+{"error":"VALIDATION_ERROR","message":"The email has already been taken.","details":{"email":["The email has already been taken."]}}
+HTTP_STATUS: 400

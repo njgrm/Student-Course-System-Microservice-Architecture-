@@ -1,0 +1,7 @@
+﻿TEST: Delete a student that does not exist
+METHOD: DELETE /api/students/9999
+EXPECTED: 404 Not Found
+
+RESPONSE:
+{"error":"NOT_FOUND","message":"The requested resource was not found."}
+HTTP_STATUS: 404

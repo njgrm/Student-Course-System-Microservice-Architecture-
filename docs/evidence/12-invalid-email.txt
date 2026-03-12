@@ -1,0 +1,8 @@
+﻿TEST: Create student with invalid email format
+METHOD: POST /api/students
+BODY: {"full_name":"Bad Email","email":"not-an-email","age":20}
+EXPECTED: 400 Validation Error
+
+RESPONSE:
+{"error":"VALIDATION_ERROR","message":"The email field must be a valid email address.","details":{"email":["The email field must be a valid email address."]}}
+HTTP_STATUS: 400

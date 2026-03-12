@@ -1,0 +1,8 @@
+﻿TEST: Create course with credits=0
+METHOD: POST /api/courses
+BODY: {"name":"Bad Credits","description":"Testing zero credits","credits":0}
+EXPECTED: 400 Validation Error
+
+RESPONSE:
+{"error":"VALIDATION_ERROR","message":"The credits field must be at least 1.","details":{"credits":["The credits field must be at least 1."]}}
+HTTP_STATUS: 400

@@ -25,7 +25,10 @@ class StudentController extends Controller
     {
         $student = Student::create($request->validated());
 
-        return response()->json($student, 201);
+        return response()->json([
+            'id'      => $student->id,
+            'message' => 'Student created successfully.',
+        ], 201);
     }
 
     /**
@@ -43,7 +46,10 @@ class StudentController extends Controller
     {
         $student->update($request->validated());
 
-        return response()->json($student);
+        return response()->json([
+            'id'      => $student->id,
+            'message' => 'Student updated successfully.',
+        ]);
     }
 
     /**

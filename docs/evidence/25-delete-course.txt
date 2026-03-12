@@ -1,0 +1,7 @@
+﻿TEST: Delete course id=3
+METHOD: DELETE /api/courses/3
+EXPECTED: 200 OK
+
+RESPONSE:
+{"message":"Course deleted successfully."}
+HTTP_STATUS: 200

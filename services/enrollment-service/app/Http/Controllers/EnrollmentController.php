@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEnrollmentRequest;
 use App\Models\Enrollment;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 
@@ -12,6 +13,9 @@ class EnrollmentController extends Controller
     private const STUDENT_SERVICE = 'http://localhost:8001/api/students';
 
     private const COURSE_SERVICE = 'http://localhost:8002/api/courses';
+
+    /** HTTP timeout in seconds for inter-service calls. */
+    private const HTTP_TIMEOUT = 5;
 
     /**
      * Display a listing of all enrollments, enriched with student/course names.
@@ -32,22 +36,46 @@ class EnrollmentController extends Controller
 
         // Verify student exists via Student Service
         try {
-            $studentResponse = Http::get(self::STUDENT_SERVICE.'/'.$validated['student_id']);
+            $studentResponse = Http::timeout(self::HTTP_TIMEOUT)
+                ->get(self::STUDENT_SERVICE.'/'.$validated['student_id']);
+
             if ($studentResponse->failed()) {
-                return response()->json(['error' => 'Student not found in Student Service.'], 404);
+                return response()->json([
+                    'error'   => 'NOT_FOUND',
+                    'message' => 'Student not found in Student Service.',
+                ], 404);
             }
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Student Service is unavailable.'], 503);
+        } catch (ConnectionException $e) {
+            $code = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'Timeout') ? 504 : 503;
+
+            return response()->json([
+                'error'   => $code === 504 ? 'GATEWAY_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+                'message' => $code === 504
+                    ? 'Student Service timed out.'
+                    : 'Student Service is unavailable.',
+            ], $code);
         }
 
         // Verify course exists via Course Service
         try {
-            $courseResponse = Http::get(self::COURSE_SERVICE.'/'.$validated['course_id']);
+            $courseResponse = Http::timeout(self::HTTP_TIMEOUT)
+                ->get(self::COURSE_SERVICE.'/'.$validated['course_id']);
+
             if ($courseResponse->failed()) {
-                return response()->json(['error' => 'Course not found in Course Service.'], 404);
+                return response()->json([
+                    'error'   => 'NOT_FOUND',
+                    'message' => 'Course not found in Course Service.',
+                ], 404);
             }
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Course Service is unavailable.'], 503);
+        } catch (ConnectionException $e) {
+            $code = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'Timeout') ? 504 : 503;
+
+            return response()->json([
+                'error'   => $code === 504 ? 'GATEWAY_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+                'message' => $code === 504
+                    ? 'Course Service timed out.'
+                    : 'Course Service is unavailable.',
+            ], $code);
         }
 
         // Check for duplicate enrollment
@@ -56,7 +84,10 @@ class EnrollmentController extends Controller
             ->exists();
 
         if ($exists) {
-            return response()->json(['error' => 'Student is already enrolled in this course.'], 409);
+            return response()->json([
+                'error'   => 'DUPLICATE_ENROLLMENT',
+                'message' => 'Student is already enrolled in this course.',
+            ], 409);
         }
 
         $enrollment = Enrollment::create([
@@ -65,7 +96,10 @@ class EnrollmentController extends Controller
             'enrolled_at' => now(),
         ]);
 
-        return response()->json($this->enrichEnrollment($enrollment), 201);
+        return response()->json([
+            'id'      => $enrollment->id,
+            'message' => 'Enrollment created successfully.',
+        ], 201);
     }
 
     /**
@@ -83,12 +117,24 @@ class EnrollmentController extends Controller
     {
         // Verify student exists
         try {
-            $studentResponse = Http::get(self::STUDENT_SERVICE.'/'.$studentId);
+            $studentResponse = Http::timeout(self::HTTP_TIMEOUT)
+                ->get(self::STUDENT_SERVICE.'/'.$studentId);
+
             if ($studentResponse->failed()) {
-                return response()->json(['error' => 'Student not found.'], 404);
+                return response()->json([
+                    'error'   => 'NOT_FOUND',
+                    'message' => 'Student not found.',
+                ], 404);
             }
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Student Service is unavailable.'], 503);
+        } catch (ConnectionException $e) {
+            $code = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'Timeout') ? 504 : 503;
+
+            return response()->json([
+                'error'   => $code === 504 ? 'GATEWAY_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+                'message' => $code === 504
+                    ? 'Student Service timed out.'
+                    : 'Student Service is unavailable.',
+            ], $code);
         }
 
         $enrollments = Enrollment::where('student_id', $studentId)
@@ -137,7 +183,8 @@ class EnrollmentController extends Controller
 
         // Fetch student name
         try {
-            $studentResponse = Http::get(self::STUDENT_SERVICE.'/'.$enrollment->student_id);
+            $studentResponse = Http::timeout(self::HTTP_TIMEOUT)
+                ->get(self::STUDENT_SERVICE.'/'.$enrollment->student_id);
             $data['student_name'] = $studentResponse->successful()
                 ? $studentResponse->json('full_name')
                 : 'Unknown Student';
@@ -147,7 +194,8 @@ class EnrollmentController extends Controller
 
         // Fetch course name
         try {
-            $courseResponse = Http::get(self::COURSE_SERVICE.'/'.$enrollment->course_id);
+            $courseResponse = Http::timeout(self::HTTP_TIMEOUT)
+                ->get(self::COURSE_SERVICE.'/'.$enrollment->course_id);
             $data['course_name'] = $courseResponse->successful()
                 ? $courseResponse->json('name')
                 : 'Unknown Course';
