@@ -15,16 +15,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->append(\App\Http\Middleware\PrettyJson::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // 400 — Validation errors (missing/invalid input)
         $exceptions->render(function (ValidationException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
-                    'error'   => 'VALIDATION_ERROR',
-                    'message' => $e->getMessage(),
-                    'details' => $e->errors(),
+                    'error'   => '400 VALIDATION_ERROR',
+                    'message' => collect($e->errors())->flatten()->implode(' '),
                 ], 400);
             }
         });
@@ -35,17 +34,27 @@ return Application::configure(basePath: dirname(__DIR__))
                 $model = class_basename($e->getModel());
 
                 return response()->json([
-                    'error'   => 'NOT_FOUND',
+                    'error'   => '404 NOT_FOUND',
                     'message' => "{$model} not found.",
                 ], 404);
             }
         });
 
-        // 404 — Route not found
+        // 404 — Route or model not found
         $exceptions->render(function (NotFoundHttpException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
+                $previous = $e->getPrevious();
+                if ($previous instanceof ModelNotFoundException) {
+                    $model = class_basename($previous->getModel());
+
+                    return response()->json([
+                        'error'   => '404 NOT_FOUND',
+                        'message' => "{$model} not found.",
+                    ], 404);
+                }
+
                 return response()->json([
-                    'error'   => 'NOT_FOUND',
+                    'error'   => '404 NOT_FOUND',
                     'message' => 'The requested resource was not found.',
                 ], 404);
             }

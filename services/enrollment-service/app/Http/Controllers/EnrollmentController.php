@@ -41,7 +41,7 @@ class EnrollmentController extends Controller
 
             if ($studentResponse->failed()) {
                 return response()->json([
-                    'error'   => 'NOT_FOUND',
+                    'error'   => '404 NOT_FOUND',
                     'message' => 'Student not found in Student Service.',
                 ], 404);
             }
@@ -49,7 +49,7 @@ class EnrollmentController extends Controller
             $code = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'Timeout') ? 504 : 503;
 
             return response()->json([
-                'error'   => $code === 504 ? 'GATEWAY_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+                'error'   => $code === 504 ? '504 GATEWAY_TIMEOUT' : '503 SERVICE_UNAVAILABLE',
                 'message' => $code === 504
                     ? 'Student Service timed out.'
                     : 'Student Service is unavailable.',
@@ -63,7 +63,7 @@ class EnrollmentController extends Controller
 
             if ($courseResponse->failed()) {
                 return response()->json([
-                    'error'   => 'NOT_FOUND',
+                    'error'   => '404 NOT_FOUND',
                     'message' => 'Course not found in Course Service.',
                 ], 404);
             }
@@ -71,7 +71,7 @@ class EnrollmentController extends Controller
             $code = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'Timeout') ? 504 : 503;
 
             return response()->json([
-                'error'   => $code === 504 ? 'GATEWAY_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+                'error'   => $code === 504 ? '504 GATEWAY_TIMEOUT' : '503 SERVICE_UNAVAILABLE',
                 'message' => $code === 504
                     ? 'Course Service timed out.'
                     : 'Course Service is unavailable.',
@@ -85,7 +85,7 @@ class EnrollmentController extends Controller
 
         if ($exists) {
             return response()->json([
-                'error'   => 'DUPLICATE_ENROLLMENT',
+                'error'   => '409 DUPLICATE_ENROLLMENT',
                 'message' => 'Student is already enrolled in this course.',
             ], 409);
         }
@@ -122,7 +122,7 @@ class EnrollmentController extends Controller
 
             if ($studentResponse->failed()) {
                 return response()->json([
-                    'error'   => 'NOT_FOUND',
+                    'error'   => '404 NOT_FOUND',
                     'message' => 'Student not found.',
                 ], 404);
             }
@@ -130,7 +130,7 @@ class EnrollmentController extends Controller
             $code = str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'Timeout') ? 504 : 503;
 
             return response()->json([
-                'error'   => $code === 504 ? 'GATEWAY_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+                'error'   => $code === 504 ? '504 GATEWAY_TIMEOUT' : '503 SERVICE_UNAVAILABLE',
                 'message' => $code === 504
                     ? 'Student Service timed out.'
                     : 'Student Service is unavailable.',
