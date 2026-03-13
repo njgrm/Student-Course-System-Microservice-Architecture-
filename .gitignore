@@ -43,7 +43,6 @@ AGENTS.md
 .github/copilot-instructions.md
 
 DELIVERABLES.md
-curl-tests.md
 
 # Temp / utility scripts (not deliverables)
 run-evidence.ps1
