@@ -14,7 +14,7 @@
 | Guanzon, Jurriel |
 | Sildora, Jegrick |
 
-**[Google Docs Documentation](https://docs.google.com/document/d/1qThjnoe5eZF1PKJHDGRZd47ULit25-4R/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true
+**[Lab 2 Google Docs Documentation](https://docs.google.com/document/d/1qThjnoe5eZF1PKJHDGRZd47ULit25-4R/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true
 )**
 
 
