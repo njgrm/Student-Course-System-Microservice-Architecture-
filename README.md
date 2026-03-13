@@ -1,6 +1,6 @@
 # Student Course System — Microservices Architecture
 
-> **Laboratory 1:** Monolithic vs Microservices Architecture (SAR2)  
+> **Laboratory 2:**  MICROSERVICES EDGE CASE TESTING (CURL-BASED)
 > *ITSAR2 313 – System Integration and Architecture 2*
 
 ---
@@ -14,9 +14,9 @@
 | Guanzon, Jurriel |
 | Sildora, Jegrick |
 
-**[Google Docs Documentation](https://docs.google.com/document/d/1qThjnoe5eZF1PKJHDGRZd47ULit25-4R/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true)**
+**[Google Docs Documentation](https://docs.google.com/document/d/1qThjnoe5eZF1PKJHDGRZd47ULit25-4R/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true
+)**
 
-https://docs.google.com/document/d/1qThjnoe5eZF1PKJHDGRZd47ULit25-4R/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true
 
 ## Overview
 
