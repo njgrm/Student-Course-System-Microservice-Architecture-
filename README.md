@@ -1,7 +1,5 @@
 ﻿# Student Course System — Microservices Architecture
 
-> **Laboratory 1:** Monolithic vs Microservices Architecture (SAR2)
-
 ## Overview
 
 This project implements a **Simple Student Course System** in two architectures side-by-side:
