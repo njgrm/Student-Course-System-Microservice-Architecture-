@@ -1,6 +1,6 @@
 # Student Course System — Microservices Architecture
 
-> **Laboratory 2:**  MICROSERVICES EDGE CASE TESTING (CURL-BASED)
+> **Laboratory 2:**  MICROSERVICES EDGE CASE TESTING (CURL-BASED)  
 > *ITSAR2 313 – System Integration and Architecture 2*
 
 ---
