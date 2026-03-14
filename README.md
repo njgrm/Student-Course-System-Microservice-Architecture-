@@ -1,6 +1,6 @@
 # Product Ordering API — Business Logic Architecture
 
-> **Laboratory 3:** SYSTEMS ON BUSINESS LOGIC (CURL-BASED TESTING)
+> **Laboratory 3:** SYSTEMS ON BUSINESS LOGIC  
 > *System Architecture and Integration 2*
 
 ---
