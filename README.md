@@ -15,7 +15,7 @@
 | Guanzon, Jurriel |
 | Sildora, Jegrick |
 
-**Lab 3 Narrative Report:** [LAB3_REPORT.md](LAB3_REPORT.md)
+**[Lab 3 Google Docs Documentation](https://docs.google.com/document/d/1XlDXXU-0pP7V2lg2wDjpYT4bHNHxfZH1/edit?usp=sharing&ouid=115552962668393974332&rtpof=true&sd=true)**
 
 ---
 
