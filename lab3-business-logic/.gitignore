@@ -1,0 +1,42 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime / temp files
+*.log
+*.pid
+*.pid.lock
+*.seed
+
+# Prisma / SQLite local database artifacts
+prisma/dev.db
+prisma/dev.db-journal
+prisma/dev.db-wal
+prisma/dev.db-shm
+
+# Coverage and caches
+coverage/
+.nyc_output/
+.cache/
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+AGENTS.md
+.vscode/
+.qodo/
+LAB3_REPORT.md
+READMEFORMAT.md
